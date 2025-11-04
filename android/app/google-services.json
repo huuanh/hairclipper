@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "422975849841",
+    "project_id": "hair-clipper-prank-98015",
+    "storage_bucket": "hair-clipper-prank-98015.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:422975849841:android:f90ed766553aa1955462d0",
+        "android_client_info": {
+          "package_name": "boom.hairclipper.funnyprank.haircut.sound"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTQd--kSqugQofOeySwcd4PuZMFCZ21S4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

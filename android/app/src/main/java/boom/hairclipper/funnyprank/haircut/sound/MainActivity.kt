@@ -1,4 +1,4 @@
-package com.hairclipper
+package boom.hairclipper.funnyprank.haircut.sound
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
