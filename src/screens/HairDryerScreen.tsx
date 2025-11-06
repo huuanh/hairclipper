@@ -6,6 +6,9 @@ import {
   FlatList,
   TouchableOpacity,
   StatusBar,
+  Image,
+  ImageBackground,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -16,6 +19,7 @@ import { Colors, GradientStyles } from '../constants/colors';
 import { HAIR_DRYERS } from '../constants/data';
 import { SCREEN_NAMES } from '../constants';
 import { RootStackParamList } from '../navigation/RootNavigator';
+import { NativeAdComponent } from '../utils/NativeAdComponent';
 
 const HairDryerScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -29,26 +33,45 @@ const HairDryerScreen: React.FC = () => {
     navigation.goBack();
   };
 
-  const renderDryerItem = ({ item }: { item: typeof HAIR_DRYERS[0] }) => (
+  const getDryerImage = (id: number) => {
+    switch (id) {
+      case 1: return require('../../assets/hairDry/1.png');
+      case 2: return require('../../assets/hairDry/2.png');
+      case 3: return require('../../assets/hairDry/3.png');
+      case 4: return require('../../assets/hairDry/4.png');
+      case 5: return require('../../assets/hairDry/5.png');
+      case 6: return require('../../assets/hairDry/6.png');
+      case 7: return require('../../assets/hairDry/7.png');
+      case 8: return require('../../assets/hairDry/8.png');
+      case 9: return require('../../assets/hairDry/9.png');
+      case 10: return require('../../assets/hairDry/10.png');
+      default: return require('../../assets/hairDry/1.png');
+    }
+  };
+
+  const renderDryerItem = ({ item, index }: { item: typeof HAIR_DRYERS[0], index: number }) => (
     <TouchableOpacity
       style={styles.dryerItem}
       onPress={() => handleDryerPress(item)}
       activeOpacity={0.8}>
-      <LinearGradient
-        colors={GradientStyles.primary.colors}
-        start={GradientStyles.primary.start}
-        end={GradientStyles.primary.end}
-        style={styles.dryerGradient}>
+      <ImageBackground
+        source={require('../../assets/hairClipper/bg.png')}
+        style={styles.dryerBackground}
+        resizeMode="cover">
         <View style={styles.dryerContent}>
           <View style={styles.dryerImageContainer}>
-            <Text style={styles.dryerIcon}>💨</Text>
-            <Text style={styles.imagePlaceholder}>
-              {item.image}
-            </Text>
+            <Image 
+              source={getDryerImage(item.id)} 
+              style={styles.dryerImage} 
+              resizeMode="contain" 
+            />
           </View>
           <Text style={styles.dryerName}>{item.name}</Text>
+          <View style={styles.vipBadge}>
+            <Image source={require('../../assets/icon/vip.png')} style={styles.crownIcon} resizeMode="contain" />
+          </View>
         </View>
-      </LinearGradient>
+      </ImageBackground>
     </TouchableOpacity>
   );
 
@@ -61,15 +84,13 @@ const HairDryerScreen: React.FC = () => {
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
       <View style={[styles.safeArea, { paddingTop: insets.top }]}>
         <View style={styles.header}>
-          <CustomButton
-            title="← Back"
-            onPress={handleBackPress}
-            variant="outline"
-            size="small"
-            style={styles.backButton}
-          />
-          <Text style={styles.headerTitle}>Hair Dryers</Text>
-          <View style={styles.headerSpace} />
+          <TouchableOpacity style={styles.headerButton} onPress={handleBackPress}>
+            <Image source={require('../../assets/icon/back.png')} style={styles.headerIcon} resizeMode="contain" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Hair Dryer</Text>
+          <TouchableOpacity style={styles.headerButton} onPress={() => {}}>
+            <Image source={require('../../assets/icon/setting.png')} style={styles.headerIcon} resizeMode="contain" />
+          </TouchableOpacity>
         </View>
 
         <FlatList
@@ -78,7 +99,15 @@ const HairDryerScreen: React.FC = () => {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          style={styles.flatList}
         />
+        
+        {/* Native Ad at the bottom */}
+        <View style={styles.adWrapper}>
+          <NativeAdComponent />
+        </View>
       </View>
     </LinearGradient>
   );
@@ -98,21 +127,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
   },
-  backButton: {
-    paddingHorizontal: 15,
+  headerButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerIcon: {
+    width: 24,
+    height: 24,
+    tintColor: Colors.white,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: Colors.white,
   },
-  headerSpace: {
-    width: 80,
-  },
   listContainer: {
-    padding: 20,
+    padding: 10,
+  },
+  row: {
+    justifyContent: 'space-between',
   },
   dryerItem: {
+    width: '48%',
     marginBottom: 15,
     borderRadius: 16,
     overflow: 'hidden',
@@ -125,36 +163,52 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  dryerGradient: {
-    padding: 20,
+  dryerBackground: {
+    padding: 15,
+    minHeight: 140,
   },
   dryerContent: {
-    flexDirection: 'row',
+    flex: 1,
     alignItems: 'center',
+    position: 'relative',
   },
   dryerImageContainer: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 20,
+    marginBottom: 10,
   },
-  dryerIcon: {
-    fontSize: 30,
-  },
-  imagePlaceholder: {
-    color: Colors.white,
-    fontSize: 10,
-    textAlign: 'center',
-    marginTop: 5,
+  dryerImage: {
+    width: 60,
+    height: 60,
   },
   dryerName: {
-    flex: 1,
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
     color: Colors.white,
+    textAlign: 'center',
+  },
+  vipBadge: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  crownIcon: {
+    width: 16,
+    height: 16,
+  },
+  flatList: {
+    flex: 1,
+  },
+  adWrapper: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: 'transparent',
   },
 });
 

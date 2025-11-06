@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,16 +6,40 @@ import {
   StatusBar,
   TouchableOpacity,
   Vibration,
+  Image,
+  ImageBackground,
+  FlatList,
+  Dimensions,
+  Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
+import Sound from 'react-native-sound';
 
 import { CustomButton } from '../components';
 import { useSoundPlayer } from '../components/SoundPlayer';
+import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { Colors, GradientStyles } from '../constants/colors';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { SCREEN_NAMES } from '../constants';
+import { HAIR_CLIPPERS } from '../constants/data';
+
+const getClipperImage = (id: number) => {
+  switch (id) {
+    case 1: return require('../../assets/hairClipper/1.png');
+    case 2: return require('../../assets/hairClipper/2.png');
+    case 3: return require('../../assets/hairClipper/3.png');
+    case 4: return require('../../assets/hairClipper/4.png');
+    case 5: return require('../../assets/hairClipper/5.png');
+    case 6: return require('../../assets/hairClipper/6.png');
+    case 7: return require('../../assets/hairClipper/7.png');
+    case 8: return require('../../assets/hairClipper/8.png');
+    case 9: return require('../../assets/hairClipper/9.png');
+    case 10: return require('../../assets/hairClipper/10.png');
+    default: return require('../../assets/hairClipper/1.png');
+  }
+};
 
 type HairClipperDetailRouteProp = RouteProp<RootStackParamList, 'HairClipperDetail'>;
 
@@ -24,15 +48,61 @@ const HairClipperDetailScreen: React.FC = () => {
   const route = useRoute<HairClipperDetailRouteProp>();
   const { clipper } = route.params;
   const insets = useSafeAreaInsets();
-  
-  const [isActive, setIsActive] = useState(false);
 
+  const [isActive, setIsActive] = useState(false);
+  const [flashEnabled, setFlashEnabled] = useState(false);
+  const [vibrationEnabled, setVibrationEnabled] = useState(true);
+  const [playAfter, setPlayAfter] = useState(0); // 0 = off, 3, 5, 10 seconds
+  const [loopEnabled, setLoopEnabled] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [isZoomedIn, setIsZoomedIn] = useState(false);
+  const [showTimeModal, setShowTimeModal] = useState(false);
+
+  // Tạo các sound players cho các loại âm thanh khác nhau
   const { playSound, stopSound } = useSoundPlayer({
     soundFile: clipper.sound,
-    loop: true,
-    vibrate: true,
+    loop: loopEnabled,
+    vibrate: vibrationEnabled,
     vibrationPattern: [0, 100, 50, 100],
   });
+
+  const handlePlayAfterSelect = () => {
+    setShowTimeModal(true);
+  };
+
+  const handleTimeSelect = (seconds: number) => {
+    setPlayAfter(seconds);
+    setShowTimeModal(false);
+
+    // Nếu chọn thời gian > 0, bắt đầu đếm ngược ngay lập tức
+    if (seconds > 0) {
+      setCountdown(seconds);
+      // Dừng phát nhạc nếu đang phát
+      if (isActive) {
+        stopSound();
+        setIsActive(false);
+      }
+    } else {
+      setCountdown(0); // Reset countdown khi chọn "off"
+    }
+  };
+
+  useEffect(() => {
+    let interval: any;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(prev => {
+          if (prev === 1) {
+            // Khi countdown kết thúc, tự động phát nhạc
+            setIsActive(true);
+            playSound();
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [countdown, playSound]);
 
   const handleBackPress = () => {
     stopSound();
@@ -45,10 +115,43 @@ const HairClipperDetailScreen: React.FC = () => {
       stopSound();
       setIsActive(false);
     } else {
-      playSound();
-      setIsActive(true);
+      if (playAfter > 0) {
+        setCountdown(playAfter);
+      } else {
+        playSound();
+        setIsActive(true);
+      }
     }
   };
+
+  const handleZoom = () => {
+    setIsZoomedIn(!isZoomedIn);
+  };
+
+  const handleFlashToggle = () => {
+    setFlashEnabled(!flashEnabled);
+  };
+
+  const handleVibrationToggle = () => {
+    setVibrationEnabled(!vibrationEnabled);
+  };
+
+  const handleHomePress = () => {
+    stopSound();
+    setIsActive(false);
+    navigation.goBack();
+  };
+
+  const handleLoopToggle = () => {
+    setLoopEnabled(!loopEnabled);
+  };
+
+  const handleClipperSelect = (selectedClipper: any) => {
+    // For now, just show selected clipper without navigation
+    console.log('Selected clipper:', selectedClipper.name);
+  };
+
+  const otherClippers = HAIR_CLIPPERS.filter(c => c.id !== clipper.id);
 
   return (
     <LinearGradient
@@ -58,67 +161,180 @@ const HairClipperDetailScreen: React.FC = () => {
       style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
       <View style={[styles.safeArea, { paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <CustomButton
-            title="← Back"
-            onPress={handleBackPress}
-            variant="outline"
-            size="small"
-            style={styles.backButton}
-          />
-          <Text style={styles.headerTitle}>{clipper.name}</Text>
-          <View style={styles.headerSpace} />
-        </View>
+        <ImageBackground
+          source={require('../../assets/hairClipper/bigbg.png')}
+          style={[
+            styles.sectionsBackground,
+            isZoomedIn && styles.sectionsBackgroundZoomed
+          ]}
+          resizeMode="cover">
 
-        <View style={styles.content}>
-          <View style={styles.clipperContainer}>
-            <TouchableOpacity
-              style={[
-                styles.clipperButton,
-                isActive && styles.clipperButtonActive
-              ]}
-              onPress={handlePrankToggle}
-              activeOpacity={0.8}>
-              <LinearGradient
-                colors={isActive ? ['#EF4444', '#DC2626'] : GradientStyles.primary.colors}
-                start={GradientStyles.primary.start}
-                end={GradientStyles.primary.end}
-                style={styles.clipperGradient}>
-                <Text style={styles.clipperIcon}>✂️</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-            
-            <Text style={styles.imagePlaceholder}>
-              Image: {clipper.image}
-            </Text>
-          </View>
-
-          <View style={styles.instructionsContainer}>
-            <Text style={styles.instructionTitle}>
-              {isActive ? 'Prank Active!' : 'Tap to Start Prank'}
-            </Text>
-            <Text style={styles.instructionText}>
-              {isActive
-                ? 'Touch the screen to simulate hair cutting with realistic sounds and vibration'
-                : 'Press the button above to activate the hair clipper prank'
-              }
-            </Text>
-          </View>
-
-          {isActive && (
-            <TouchableOpacity
-              style={styles.stopButton}
-              onPress={handlePrankToggle}>
-              <CustomButton
-                title="Stop Prank"
-                onPress={handlePrankToggle}
-                variant="secondary"
-                size="large"
+          {/* Section 1: Header */}
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.headerButton} onPress={handleBackPress}>
+              <Image
+                source={require('../../assets/icon/back.png')}
+                style={styles.headerIcon}
               />
             </TouchableOpacity>
-          )}
-        </View>
+            <Text style={styles.headerTitle}>{clipper.name}</Text>
+            <View style={styles.headerSpace} />
+          </View>
+
+          {/* Section 2: Image Item */}
+          <View style={styles.imageSection}>
+            <TouchableOpacity onPress={handlePrankToggle} activeOpacity={0.8}>
+              <Image
+                source={getClipperImage(clipper.id)}
+                style={[
+                  styles.clipperImage,
+                  isZoomedIn && styles.clipperImageZoomed
+                ]}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            {countdown > 0 && (
+              <View style={styles.countdownOverlay}>
+                <Text style={styles.countdownText}>{countdown}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Section 3: Action Buttons */}
+          <View style={styles.actionButtonsSection}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleZoom}>
+              <Image
+                source={isZoomedIn ? require('../../assets/icon/zoom_out.png') : require('../../assets/icon/zoom_in.png')}
+                style={styles.actionIcon}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={handleFlashToggle}>
+              <Image
+                source={flashEnabled ? require('../../assets/icon/flash_on.png') : require('../../assets/icon/flash_off.png')}
+                style={styles.actionIcon}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={handleVibrationToggle}>
+              <Image
+                source={vibrationEnabled ? require('../../assets/icon/vibrate_on.png') : require('../../assets/icon/vibrate_off.png')}
+                style={styles.actionIcon}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={handleHomePress}>
+              <Image
+                source={require('../../assets/icon/home.png')}
+                style={styles.actionIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        </ImageBackground>
+
+        {/* Section 4: Play After & Loop Controls */}
+        {!isZoomedIn && (
+          <View style={styles.controlsSection}>
+            <View style={styles.playAfterContainer}>
+              <Text style={styles.controlLabel}>Play affter</Text>
+              <TouchableOpacity
+                style={styles.playAfterSelector}
+                onPress={handlePlayAfterSelect}>
+                <Text style={styles.playAfterSelectorText}>
+                  {countdown > 0 ? `${countdown}s` : (playAfter === 0 ? 'Off' : `${playAfter}s`)}
+                </Text>
+                <Text style={styles.dropdownArrow}>▼</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              style={[styles.loopButton, loopEnabled && styles.loopButtonActive]}
+              onPress={handleLoopToggle}>
+              <View style={styles.loopContent}>
+                <Text style={[styles.loopText, loopEnabled && styles.loopTextActive]}>
+                  Loop
+                </Text>
+                <Image
+                  source={loopEnabled ? require('../../assets/icon/loop_on.png') : require('../../assets/icon/loop_off.png')}
+                  style={styles.loopIcon}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Section 5: Other Clippers List */}
+        {!isZoomedIn && (
+          <>
+            <FlatList
+              data={otherClippers}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.otherClipperItem}
+                  onPress={() => handleClipperSelect(item)}>
+                  <ImageBackground
+                    source={require('../../assets/hairClipper/bg.png')}
+                    style={styles.otherClipperBackground}
+                    resizeMode="cover">
+                    <Image
+                      source={getClipperImage(item.id)}
+                      style={styles.otherClipperImage}
+                      resizeMode="contain"
+                    />
+                  </ImageBackground>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.id.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.otherClippersList}
+            />
+
+            <View style={styles.adWrapper}>
+              <NativeAdComponent />
+            </View>
+          </>
+        )}
       </View>
+
+      {/* Time Selection Modal */}
+      <Modal
+        visible={showTimeModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowTimeModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Play After Time</Text>
+
+            {[
+              { label: 'Off', value: 0 },
+              { label: '3 seconds', value: 3 },
+              { label: '5 seconds', value: 5 },
+              { label: '10 seconds', value: 10 },
+            ].map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.modalOption,
+                  playAfter === option.value && styles.modalOptionSelected
+                ]}
+                onPress={() => handleTimeSelect(option.value)}>
+                <Text style={[
+                  styles.modalOptionText,
+                  playAfter === option.value && styles.modalOptionTextSelected
+                ]}>
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => {
+                setShowTimeModal(false);
+              }}>
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 };
@@ -126,9 +342,26 @@ const HairClipperDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   safeArea: {
     flex: 1,
+  },
+  sectionsBackground: {
+    flex: 15,
+    borderRadius: 20,
+    marginHorizontal: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    overflow: 'hidden',
+    paddingBottom: 10,
+  },
+  sectionsBackgroundZoomed: {
+    flex: 1,
+    marginHorizontal: 0,
+    marginTop: 0,
+    marginBottom: 0,
+    borderRadius: 0,
   },
   header: {
     flexDirection: 'row',
@@ -136,9 +369,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
+    marginBottom: 10,
   },
-  backButton: {
-    paddingHorizontal: 15,
+  headerButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerIcon: {
+    width: 24,
+    height: 24,
+    tintColor: Colors.white,
   },
   headerTitle: {
     fontSize: 20,
@@ -146,69 +388,207 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   headerSpace: {
-    width: 80,
+    width: 40,
   },
-  content: {
+  imageSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+    position: 'relative',
+  },
+  clipperImage: {
+    width: Dimensions.get('window').width * 0.68,
+    height: Dimensions.get('window').height * 0.4,
+  },
+  clipperImageZoomed: {
+    width: Dimensions.get('window').width * 0.9,
+    height: Dimensions.get('window').height * 0.6,
+  },
+  countdownOverlay: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -50 }, { translateY: -50 }],
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 50,
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  countdownText: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: Colors.white,
+  },
+  actionButtonsSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: 60,
+    // paddingVertical: 15,
+    bottom: 0,
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    // backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    // borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionIcon: {
+    width: 32,
+    height: 32,
+    // tintColor: Colors.white,
+  },
+
+  controlsSection: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    // paddingVertical: 15,
+    marginBottom: 10,
+  },
+  playAfterContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  controlLabel: {
+    fontSize: 14,
+    color: Colors.white,
+    // marginBottom: 8,
+  },
+  playAfterSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: 60,
+    marginLeft: 10,
+  },
+  playAfterSelectorText: {
+    fontSize: 14,
+    color: Colors.white,
+    fontWeight: '500',
+  },
+  dropdownArrow: {
+    fontSize: 12,
+    color: Colors.white,
+    marginLeft: 8,
+  },
+  loopButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    // backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 20,
+    marginLeft: 15,
+  },
+  loopButtonActive: {
+    // backgroundColor: Colors.primary,
+  },
+  loopText: {
+    fontSize: 14,
+    color: Colors.white,
+  },
+  loopTextActive: {
+    fontWeight: 'bold',
+  },
+  loopIcon: {
+    width: 32,
+    height: 32,
+    // tintColor: Colors.white,
+    marginLeft: 6,
+  },
+  loopContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  otherClippersList: {
     flex: 1,
     paddingHorizontal: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // paddingVertical: 10,
   },
-  clipperContainer: {
-    alignItems: 'center',
-    marginBottom: 50,
-  },
-  clipperButton: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+  otherClipperItem: {
+    width: 60,
+    height: 60,
+    marginRight: 10,
+    borderRadius: 8,
     overflow: 'hidden',
-    elevation: 10,
-    shadowColor: Colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
   },
-  clipperButtonActive: {
-    transform: [{ scale: 1.05 }],
-  },
-  clipperGradient: {
+  otherClipperBackground: {
     flex: 1,
+    padding: 8,
+  },
+  otherClipperImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  adWrapper: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: 'transparent',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  clipperIcon: {
-    fontSize: 80,
+  modalContent: {
+    backgroundColor: Colors.background,
+    borderRadius: 20,
+    padding: 20,
+    width: '80%',
+    maxWidth: 300,
   },
-  imagePlaceholder: {
-    color: Colors.gray,
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  instructionsContainer: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  instructionTitle: {
-    fontSize: 24,
+  modalTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: Colors.white,
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
   },
-  instructionText: {
-    fontSize: 16,
-    color: Colors.gray,
-    textAlign: 'center',
-    lineHeight: 24,
+  modalOption: {
+    paddingVertical: 15,
     paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
-  stopButton: {
-    width: '100%',
+  modalOptionSelected: {
+    backgroundColor: Colors.primary || '#007AFF',
+  },
+  modalOptionText: {
+    fontSize: 16,
+    color: Colors.white,
+    textAlign: 'center',
+  },
+  modalOptionTextSelected: {
+    fontWeight: 'bold',
+  },
+  modalCloseButton: {
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginTop: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  modalCloseText: {
+    fontSize: 16,
+    color: Colors.white,
+    textAlign: 'center',
+    fontWeight: '500',
   },
 });
 

@@ -201,14 +201,14 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         overflow: 'hidden',
         borderWidth: 2,
-        borderColor: Colors.PRIMARY,
+        borderColor: Colors.gray,
         // elevation: 6,
         // shadowOffset: { width: 0, height: 2 },
         // shadowOpacity: 0.25,
         // shadowRadius: 6,
         // marginVertical: 5,
-        backgroundColor: Colors.BACKGROUND,
-        color: Colors.TERTIARY,
+        backgroundColor: Colors.background,
+        color: Colors.primary,
         minHeight: 120,
         justifyContent: 'center',
         alignItems: 'center',
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     sponsoredLabel: {
-        backgroundColor: Colors.TERTIARY,
+        backgroundColor: Colors.primary,
         paddingHorizontal: 6,
         paddingVertical: 2,
         borderRadius: 4,
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     },
     sponsoredText: {
         fontSize: 9,
-        color: Colors.WHITE,
+        color: Colors.white,
         fontWeight: '900',
     },
     toggleMediaButton: {
@@ -285,20 +285,20 @@ const styles = StyleSheet.create({
     nativeAdHeadline: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: Colors.TERTIARY,
+        color: Colors.primary,
         marginVertical: 2,
         lineHeight: 20,
     },
     nativeAdAdvertiser: {
         fontSize: 12,
-        color: Colors.TERTIARY,
+        color: Colors.primary,
         opacity: 0.9,
         marginBottom: 2,
         fontWeight: '500',
     },
     nativeAdRating: {
         fontSize: 12,
-        color: Colors.TERTIARY,
+        color: Colors.primary,
         fontWeight: '600',
     },
     nativeAdPrice: {
@@ -328,12 +328,12 @@ const styles = StyleSheet.create({
     },
     nativeAdBody: {
         fontSize: 12,
-        color: Colors.TERTIARY,
+        color: Colors.primary,
         lineHeight: 16,
         textAlign: 'left',
     },
     nativeAdCTA: {
-        backgroundColor: Colors.TERTIARY,
+        backgroundColor: Colors.primary,
         // paddingVertical: 12,
         // paddingHorizontal: 20,
         borderRadius: 8,
@@ -359,13 +359,13 @@ const styles = StyleSheet.create({
         // backgroundColor: 'red'
     },
     loadingText: {
-        color: Colors.TERTIARY,
+        color: Colors.primary,
         fontSize: 14,
         textAlign: 'center',
         fontWeight: '500',
     },
     errorText: {
-        color: Colors.TERTIARY,
+        color: Colors.primary,
         fontSize: 14,
         textAlign: 'center',
         fontWeight: '500',
