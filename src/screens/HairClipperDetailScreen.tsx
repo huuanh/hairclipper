@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import Sound from 'react-native-sound';
 
 import { CustomButton } from '../components';
 import { useSoundPlayer } from '../components/SoundPlayer';
+import { useDeviceFlash } from '../hooks/useDeviceFlash';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { Colors, GradientStyles } from '../constants/colors';
 import { RootStackParamList } from '../navigation/RootNavigator';
@@ -58,13 +59,22 @@ const HairClipperDetailScreen: React.FC = () => {
   const [isZoomedIn, setIsZoomedIn] = useState(false);
   const [showTimeModal, setShowTimeModal] = useState(false);
 
-  // Tạo các sound players cho các loại âm thanh khác nhau
-  const { playSound, stopSound } = useSoundPlayer({
+  // Sound player với flash integration  
+  const { playSound, stopSound, isFlashing: soundFlashing } = useSoundPlayer({
     soundFile: clipper.sound,
     loop: loopEnabled,
     vibrate: vibrationEnabled,
     vibrationPattern: [0, 100, 50, 100],
+    flash: flashEnabled,
   });
+
+  // Debug flash state
+  useEffect(() => {
+    console.log('Flash state changed:', { flashEnabled, soundFlashing });
+  }, [flashEnabled, soundFlashing]);
+
+  // Device flash hook
+  useDeviceFlash(soundFlashing && flashEnabled, flashEnabled);
 
   const handlePlayAfterSelect = () => {
     setShowTimeModal(true);
@@ -93,7 +103,7 @@ const HairClipperDetailScreen: React.FC = () => {
       interval = setInterval(() => {
         setCountdown(prev => {
           if (prev === 1) {
-            // Khi countdown kết thúc, tự động phát nhạc
+            // Khi countdown kết thúc, tự động phát nhạc với flash
             setIsActive(true);
             playSound();
           }
@@ -101,7 +111,10 @@ const HairClipperDetailScreen: React.FC = () => {
         });
       }, 1000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      // Cleanup flash khi component unmount
+    };
   }, [countdown, playSound]);
 
   const handleBackPress = () => {
@@ -292,6 +305,11 @@ const HairClipperDetailScreen: React.FC = () => {
           </>
         )}
       </View>
+
+      {/* Flash Overlay */}
+      {soundFlashing && flashEnabled && (
+        <View style={styles.flashOverlay} />
+      )}
 
       {/* Time Selection Modal */}
       <Modal
@@ -589,6 +607,18 @@ const styles = StyleSheet.create({
     color: Colors.white,
     textAlign: 'center',
     fontWeight: '500',
+  },
+  // Flash overlay style
+  flashOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    zIndex: 1000,
+    pointerEvents: 'none', // Cho phép touch events đi qua
+    opacity: 1,
   },
 });
 

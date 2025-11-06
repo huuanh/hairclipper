@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Sound from 'react-native-sound';
 import { Vibration } from 'react-native';
 
@@ -7,6 +7,8 @@ interface SoundPlayerProps {
   loop?: boolean;
   vibrate?: boolean;
   vibrationPattern?: number[];
+  flash?: boolean; // Thêm flash option
+  onFlashChange?: (isFlashing: boolean) => void; // Callback cho flash state
 }
 
 export const useSoundPlayer = ({
@@ -14,8 +16,12 @@ export const useSoundPlayer = ({
   loop = false,
   vibrate = false,
   vibrationPattern = [0, 1000, 500, 1000],
+  flash = false,
+  onFlashChange,
 }: SoundPlayerProps) => {
   const soundRef = useRef<Sound | null>(null);
+  const flashIntervalRef = useRef<any>(null);
+  const [isFlashing, setIsFlashing] = useState(false);
 
   useEffect(() => {
     // Initialize sound
@@ -51,11 +57,41 @@ export const useSoundPlayer = ({
         soundRef.current.release();
         soundRef.current = null;
       }
+      // Cleanup flash interval
+      if (flashIntervalRef.current) {
+        clearInterval(flashIntervalRef.current);
+        flashIntervalRef.current = null;
+      }
     };
   }, [soundFile]);
 
+  // Flash control functions
+  const startFlashing = () => {
+    if (flash && !flashIntervalRef.current) {
+      console.log('🔦 Starting flash');
+      flashIntervalRef.current = setInterval(() => {
+        setIsFlashing(prev => {
+          const newState = !prev;
+          if (onFlashChange) onFlashChange(newState);
+          return newState;
+        });
+      }, 120); // Flash every 120ms
+    }
+  };
+
+  const stopFlashing = () => {
+    if (flashIntervalRef.current) {
+      console.log('🔦 Stopping flash');
+      clearInterval(flashIntervalRef.current);
+      flashIntervalRef.current = null;
+    }
+    setIsFlashing(false);
+    if (onFlashChange) onFlashChange(false);
+  };
+
   const playSound = () => {
     console.log('🎵 Attempting to play sound...');
+    console.log('Flash enabled:', flash);
     
     if (!soundRef.current) {
       console.log('❌ No sound reference available');
@@ -71,6 +107,8 @@ export const useSoundPlayer = ({
       soundRef.current.play((success) => {
         if (success) {
           console.log('✅ Sound played successfully');
+          // Start flashing when sound starts
+          
         } else {
           console.log('❌ Playback failed due to audio decoding errors');
         }
@@ -78,6 +116,11 @@ export const useSoundPlayer = ({
 
       if (loop) {
         soundRef.current.setNumberOfLoops(-1);
+      }
+
+      if (flash) {
+        console.log('🔦 Starting flash from playSound');
+        startFlashing();
       }
 
       if (vibrate) {
@@ -95,6 +138,9 @@ export const useSoundPlayer = ({
   const stopSound = () => {
     if (soundRef.current) {
       soundRef.current.stop();
+      // Stop flashing when sound stops
+      stopFlashing();
+      
       try {
         Vibration.cancel();
       } catch (error) {
@@ -106,6 +152,9 @@ export const useSoundPlayer = ({
   const pauseSound = () => {
     if (soundRef.current) {
       soundRef.current.pause();
+      // Stop flashing when sound pauses
+      stopFlashing();
+      
       try {
         Vibration.cancel();
       } catch (error) {
@@ -118,5 +167,8 @@ export const useSoundPlayer = ({
     playSound,
     stopSound,
     pauseSound,
+    isFlashing,
+    startFlashing,
+    stopFlashing,
   };
 };
