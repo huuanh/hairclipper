@@ -7,5 +7,6 @@ export { default as DIYMakeupScreen } from './DIYMakeupScreen';
 export { default as DIYMakeupCameraScreen } from './DIYMakeupCameraScreen';
 export { default as DIYMakeupEditScreen } from './DIYMakeupEditScreen';
 export { default as FunnySoundScreen } from './FunnySoundScreen';
+export { default as FunnySoundDetailScreen } from './FunnySoundDetailScreen';
 export { default as HairDryerScreen } from './HairDryerScreen';
 export { default as HairDryerDetailScreen } from './HairDryerDetailScreen';

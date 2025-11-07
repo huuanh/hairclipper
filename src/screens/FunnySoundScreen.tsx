@@ -19,6 +19,8 @@ import { useSoundPlayer } from '../components/SoundPlayer';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { Colors, GradientStyles } from '../constants/colors';
 import { FUNNY_SOUNDS } from '../constants/data';
+import { SCREEN_NAMES } from '../constants';
+import type { RootStackParamList } from '../navigation/RootNavigator';
 
 const getSoundImage = (id: number) => {
   switch (id) {
@@ -37,7 +39,7 @@ const getSoundImage = (id: number) => {
 };
 
 const FunnySoundScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
 
   const handleBackPress = () => {
@@ -52,7 +54,7 @@ const FunnySoundScreen: React.FC = () => {
     });
 
     const handleSoundPress = () => {
-      playSound();
+      navigation.navigate(SCREEN_NAMES.FUNNY_SOUND_DETAIL, { sound: item });
     };
 
     const isVip = item.id > 2; // Items 3+ are VIP

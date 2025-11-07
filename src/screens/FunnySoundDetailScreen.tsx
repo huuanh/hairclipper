@@ -24,30 +24,30 @@ import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { Colors, GradientStyles } from '../constants/colors';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { SCREEN_NAMES } from '../constants';
-import { HAIR_DRYERS } from '../constants/data';
+import { FUNNY_SOUNDS } from '../constants/data';
 
-const getDryerImage = (id: number) => {
+const getFunnySoundImage = (id: number) => {
   switch (id) {
-    case 1: return require('../../assets/hairDry/1.png');
-    case 2: return require('../../assets/hairDry/2.png');
-    case 3: return require('../../assets/hairDry/3.png');
-    case 4: return require('../../assets/hairDry/4.png');
-    case 5: return require('../../assets/hairDry/5.png');
-    case 6: return require('../../assets/hairDry/6.png');
-    case 7: return require('../../assets/hairDry/7.png');
-    case 8: return require('../../assets/hairDry/8.png');
-    case 9: return require('../../assets/hairDry/9.png');
-    case 10: return require('../../assets/hairDry/10.png');
-    default: return require('../../assets/hairDry/1.png');
+    case 1: return require('../../assets/funnySound/1.png');
+    case 2: return require('../../assets/funnySound/2.png');
+    case 3: return require('../../assets/funnySound/3.png');
+    case 4: return require('../../assets/funnySound/4.png');
+    case 5: return require('../../assets/funnySound/5.png');
+    case 6: return require('../../assets/funnySound/6.png');
+    case 7: return require('../../assets/funnySound/7.png');
+    case 8: return require('../../assets/funnySound/8.png');
+    case 9: return require('../../assets/funnySound/9.png');
+    case 10: return require('../../assets/funnySound/10.png');
+    default: return require('../../assets/funnySound/1.png');
   }
 };
 
-type HairDryerDetailRouteProp = RouteProp<RootStackParamList, 'HairDryerDetail'>;
+type FunnySoundDetailRouteProp = RouteProp<RootStackParamList, 'FunnySoundDetail'>;
 
-const HairDryerDetailScreen: React.FC = () => {
+const FunnySoundDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const route = useRoute<HairDryerDetailRouteProp>();
-  const { dryer } = route.params;
+  const route = useRoute<FunnySoundDetailRouteProp>();
+  const { sound: funnySound } = route.params;
   const insets = useSafeAreaInsets();
 
   const [isActive, setIsActive] = useState(false);
@@ -61,7 +61,7 @@ const HairDryerDetailScreen: React.FC = () => {
 
   // Sound player với flash integration  
   const { playSound, stopSound, isFlashing: soundFlashing } = useSoundPlayer({
-    soundFile: dryer.sound,
+    soundFile: funnySound.sound,
     loop: loopEnabled,
     vibrate: vibrationEnabled,
     vibrationPattern: [0, 100, 50, 100],
@@ -157,8 +157,8 @@ const HairDryerDetailScreen: React.FC = () => {
     setLoopEnabled(!loopEnabled);
   };
 
-  const handleDryerSelect = (selectedDryer: any) => {
-    console.log('Selected dryer:', selectedDryer.name);
+  const handleSoundSelect = (selectedSound: any) => {
+    console.log('Selected sound:', selectedSound.name);
     
     // Dừng âm thanh hiện tại nếu đang phát
     if (isActive) {
@@ -172,11 +172,11 @@ const HairDryerDetailScreen: React.FC = () => {
     setIsZoomedIn(false);
     setShowTimeModal(false);
     
-    // Navigate đến detail screen với dryer mới
-    navigation.navigate('HairDryerDetail', { dryer: selectedDryer });
+    // Navigate đến detail screen với sound mới
+    navigation.navigate('FunnySoundDetail', { sound: selectedSound });
   };
 
-  const otherDryers = HAIR_DRYERS.filter(d => d.id !== dryer.id);
+  const otherSounds = FUNNY_SOUNDS.filter(s => s.id !== funnySound.id);
 
   return (
     <LinearGradient
@@ -187,7 +187,7 @@ const HairDryerDetailScreen: React.FC = () => {
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
       <View style={[styles.safeArea, { paddingTop: insets.top }]}>
         <ImageBackground
-          source={require('../../assets/hairDry/bigbg.png')}
+          source={require('../../assets/funnySound/bigbg.png')}
           style={[
             styles.sectionsBackground,
             isZoomedIn && styles.sectionsBackgroundZoomed
@@ -202,7 +202,7 @@ const HairDryerDetailScreen: React.FC = () => {
                 style={styles.headerIcon}
               />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{dryer.name}</Text>
+            <Text style={styles.headerTitle}>{funnySound.name}</Text>
             <View style={styles.headerSpace} />
           </View>
 
@@ -210,10 +210,10 @@ const HairDryerDetailScreen: React.FC = () => {
           <View style={styles.imageSection}>
             <TouchableOpacity onPress={handlePrankToggle} activeOpacity={0.8}>
               <Image
-                source={getDryerImage(dryer.id)}
+                source={getFunnySoundImage(funnySound.id)}
                 style={[
-                  styles.dryerImage,
-                  isZoomedIn && styles.dryerImageZoomed
+                  styles.soundImage,
+                  isZoomedIn && styles.soundImageZoomed
                 ]}
                 resizeMode="contain"
               />
@@ -284,22 +284,22 @@ const HairDryerDetailScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Section 5: Other Dryers List */}
+        {/* Section 5: Other Sounds List */}
         {!isZoomedIn && (
-          <View style={styles.otherDryersSection}>
+          <View style={styles.otherSoundsSection}>
             <FlatList
-              data={otherDryers}
+              data={otherSounds}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.otherDryerItem}
-                  onPress={() => handleDryerSelect(item)}>
+                  style={styles.otherSoundItem}
+                  onPress={() => handleSoundSelect(item)}>
                   <ImageBackground
-                    source={require('../../assets/hairDry/bg.png')}
-                    style={styles.otherDryerBackground}
+                    source={require('../../assets/funnySound/bg.png')}
+                    style={styles.otherSoundBackground}
                     resizeMode="cover">
                     <Image
-                      source={getDryerImage(item.id)}
-                      style={styles.otherDryerImage}
+                      source={getFunnySoundImage(item.id)}
+                      style={styles.otherSoundImage}
                       resizeMode="contain"
                     />
                   </ImageBackground>
@@ -308,7 +308,7 @@ const HairDryerDetailScreen: React.FC = () => {
               keyExtractor={(item) => item.id.toString()}
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.otherDryersList}
+              contentContainerStyle={styles.otherSoundsList}
             />
           </View>
         )}
@@ -430,11 +430,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     position: 'relative',
   },
-  dryerImage: {
+  soundImage: {
     width: Dimensions.get('window').width * 0.68,
     height: Dimensions.get('window').height * 0.4,
   },
-  dryerImageZoomed: {
+  soundImageZoomed: {
     width: Dimensions.get('window').width * 0.9,
     height: Dimensions.get('window').height * 0.6,
   },
@@ -534,26 +534,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  otherDryersSection: {
+  otherSoundsSection: {
     height: 80,
     marginBottom: 10,
   },
-  otherDryersList: {
+  otherSoundsList: {
     paddingHorizontal: 20,
     paddingVertical: 10,
   },
-  otherDryerItem: {
+  otherSoundItem: {
     width: 60,
     height: 60,
     marginRight: 10,
     borderRadius: 8,
     overflow: 'hidden',
   },
-  otherDryerBackground: {
+  otherSoundBackground: {
     flex: 1,
     padding: 8,
   },
-  otherDryerImage: {
+  otherSoundImage: {
     flex: 1,
     width: '100%',
     height: '100%',
@@ -629,4 +629,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HairDryerDetailScreen;
+export default FunnySoundDetailScreen;

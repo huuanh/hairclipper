@@ -16,6 +16,7 @@ export const SCREEN_NAMES = {
   FUNNY_SOUND: 'FunnySound',
   HAIR_DRYER: 'HairDryer',
   HAIR_DRYER_DETAIL: 'HairDryerDetail',
+  FUNNY_SOUND_DETAIL: 'FunnySoundDetail',
 } as const;
 
 export const ONBOARDING_DATA = [

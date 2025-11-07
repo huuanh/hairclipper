@@ -15,6 +15,7 @@ import {
   DIYMakeupCameraScreen,
   DIYMakeupEditScreen,
   FunnySoundScreen,
+  FunnySoundDetailScreen,
   HairDryerScreen,
   HairDryerDetailScreen,
 } from '../screens';
@@ -29,6 +30,7 @@ export type RootStackParamList = {
   [SCREEN_NAMES.DIY_MAKEUP_CAMERA]: undefined;
   [SCREEN_NAMES.DIY_MAKEUP_EDIT]: { imageUri: string };
   [SCREEN_NAMES.FUNNY_SOUND]: undefined;
+  [SCREEN_NAMES.FUNNY_SOUND_DETAIL]: { sound: any };
   [SCREEN_NAMES.HAIR_DRYER]: undefined;
   [SCREEN_NAMES.HAIR_DRYER_DETAIL]: { dryer: any };
 };
@@ -80,6 +82,7 @@ const RootNavigator: React.FC = () => {
         <Stack.Screen name={SCREEN_NAMES.DIY_MAKEUP_CAMERA} component={DIYMakeupCameraScreen} />
         <Stack.Screen name={SCREEN_NAMES.DIY_MAKEUP_EDIT} component={DIYMakeupEditScreen} />
         <Stack.Screen name={SCREEN_NAMES.FUNNY_SOUND} component={FunnySoundScreen} />
+        <Stack.Screen name={SCREEN_NAMES.FUNNY_SOUND_DETAIL} component={FunnySoundDetailScreen} />
         <Stack.Screen name={SCREEN_NAMES.HAIR_DRYER} component={HairDryerScreen} />
         <Stack.Screen name={SCREEN_NAMES.HAIR_DRYER_DETAIL} component={HairDryerDetailScreen} />
       </Stack.Navigator>
