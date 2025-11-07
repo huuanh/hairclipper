@@ -3,32 +3,36 @@ import {
   View,
   Text,
   StyleSheet,
-  
   StatusBar,
   TouchableOpacity,
+  Image,
+  ImageBackground,
+  Alert,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
+import { launchCamera, launchImageLibrary, ImagePickerResponse, MediaType } from 'react-native-image-picker';
 
 import { CustomButton, MenuCard } from '../components';
+import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { Colors, GradientStyles } from '../constants/colors';
 import { SCREEN_NAMES } from '../constants';
 
 const DIY_MAKEUP_OPTIONS = [
   {
     id: 1,
-    title: 'Take Photo',
-    icon: '📷',
-    description: 'Use camera to take a new photo',
-    action: 'camera',
+    title: 'Upload\nPhoto',
+    icon: require('../../assets/icon/gallery.png'),
+    action: 'gallery',
   },
   {
     id: 2,
-    title: 'Choose from Gallery',
-    icon: '🖼️',
-    description: 'Select existing photo from gallery',
-    action: 'gallery',
+    title: 'Capture from\nCamera',
+    icon: require('../../assets/icon/camera.png'),
+    action: 'camera',
   },
 ];
 
@@ -40,15 +44,105 @@ const DIYMakeupScreen: React.FC = () => {
     navigation.goBack();
   };
 
+  const requestCameraPermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Camera Permission',
+            message: 'App needs camera permission to take photos',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const navigateToEdit = (imageUri: string) => {
+    (navigation as any).navigate(SCREEN_NAMES.DIY_MAKEUP_EDIT, { imageUri });
+  };
+
+  const handleCameraLaunch = async () => {
+    const hasPermission = await requestCameraPermission();
+    if (!hasPermission) {
+      Alert.alert('Permission Required', 'Camera permission is required to take photos.');
+      return;
+    }
+
+    const options = {
+      mediaType: 'photo' as MediaType,
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+    };
+
+    launchCamera(options, (response: ImagePickerResponse) => {
+      if (response.didCancel) {
+        console.log('User cancelled camera');
+      } else if (response.errorMessage) {
+        console.log('Camera Error: ', response.errorMessage);
+        Alert.alert('Error', 'Failed to take photo. Please try again.');
+      } else if (response.assets && response.assets[0]) {
+        const imageUri = response.assets[0].uri;
+        if (imageUri) {
+          navigateToEdit(imageUri);
+        }
+      }
+    });
+  };
+
+  const handleGalleryLaunch = () => {
+    const options = {
+      mediaType: 'photo' as MediaType,
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+    };
+
+    launchImageLibrary(options, (response: ImagePickerResponse) => {
+      if (response.didCancel) {
+        console.log('User cancelled gallery');
+      } else if (response.errorMessage) {
+        console.log('Gallery Error: ', response.errorMessage);
+        Alert.alert('Error', 'Failed to select photo. Please try again.');
+      } else if (response.assets && response.assets[0]) {
+        const imageUri = response.assets[0].uri;
+        if (imageUri) {
+          navigateToEdit(imageUri);
+        }
+      }
+    });
+  };
+
   const handleOptionPress = (action: string) => {
     if (action === 'camera') {
-      navigation.navigate(SCREEN_NAMES.DIY_MAKEUP_CAMERA as never);
+      handleCameraLaunch();
     } else if (action === 'gallery') {
-      // For now, navigate to camera screen as well
-      // In a real app, you would open image picker here
-      navigation.navigate(SCREEN_NAMES.DIY_MAKEUP_CAMERA as never);
+      handleGalleryLaunch();
     }
   };
+
+  const OptionCard: React.FC<{ option: typeof DIY_MAKEUP_OPTIONS[0] }> = ({ option }) => (
+    <TouchableOpacity
+      style={styles.optionCard}
+      onPress={() => handleOptionPress(option.action)}
+      activeOpacity={0.8}>
+      <View style={styles.cardContent}>
+        <Text style={styles.optionTitle}>{option.title}</Text>
+        <View style={styles.iconContainer}>
+          <Image source={option.icon} style={styles.optionIcon} />
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <LinearGradient
@@ -59,45 +153,31 @@ const DIYMakeupScreen: React.FC = () => {
       <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
       <View style={[styles.safeArea, { paddingTop: insets.top }]}>
         <View style={styles.header}>
-          <CustomButton
-            title="← Back"
-            onPress={handleBackPress}
-            variant="outline"
-            size="small"
-            style={styles.backButton}
-          />
-          <Text style={styles.headerTitle}>DIY Makeup</Text>
-          <View style={styles.headerSpace} />
+          <TouchableOpacity style={styles.headerButton} onPress={handleBackPress}>
+            <Image
+              source={require('../../assets/icon/back.png')}
+              style={styles.headerIcon}
+            />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>DIY Maker</Text>
+          <TouchableOpacity style={styles.headerButton}>
+            <Image
+              source={require('../../assets/icon/setting.png')}
+              style={styles.headerIcon}
+            />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>Choose Photo Source</Text>
-            <Text style={styles.subtitle}>
-              Select how you want to get a photo for makeup editing
-            </Text>
-          </View>
-
           <View style={styles.optionsContainer}>
             {DIY_MAKEUP_OPTIONS.map((option) => (
-              <View key={option.id} style={styles.optionItem}>
-                <MenuCard
-                  title={option.title}
-                  icon={option.icon}
-                  onPress={() => handleOptionPress(option.action)}
-                />
-                <Text style={styles.optionDescription}>
-                  {option.description}
-                </Text>
-              </View>
+              <OptionCard key={option.id} option={option} />
             ))}
           </View>
+        </View>
 
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoText}>
-              💡 After taking or selecting a photo, you'll be able to add various makeup effects, beards, and hairstyles to create funny transformations!
-            </Text>
-          </View>
+        <View style={styles.adWrapper}>
+          <NativeAdComponent hasMedia={true} />
         </View>
       </View>
     </LinearGradient>
@@ -118,62 +198,75 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
   },
-  backButton: {
-    paddingHorizontal: 15,
+  headerButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerIcon: {
+    width: 24,
+    height: 24,
+    tintColor: Colors.white,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: Colors.white,
   },
-  headerSpace: {
-    width: 80,
-  },
   content: {
     flex: 1,
     paddingHorizontal: 20,
-  },
-  titleContainer: {
-    alignItems: 'center',
-    marginVertical: 30,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: Colors.white,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.gray,
-    textAlign: 'center',
-    lineHeight: 24,
+    paddingTop: 20,
   },
   optionsContainer: {
     flex: 1,
     justifyContent: 'center',
+    gap: 20,
   },
-  optionItem: {
-    marginBottom: 30,
-  },
-  optionDescription: {
-    fontSize: 14,
-    color: Colors.gray,
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  infoContainer: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderRadius: 12,
+  optionCard: {
+    width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 20,
     padding: 20,
-    marginBottom: 20,
+    minHeight: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  infoText: {
-    fontSize: 14,
+  cardContent: {
+    flex: 1,
+    width: '90%',
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 15,
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  optionIcon: {
+    width: 30,
+    height: 30,
+    // tintColor: Colors.white,
+  },
+  optionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     color: Colors.white,
-    textAlign: 'center',
-    lineHeight: 20,
+    textAlign: 'left',
+    lineHeight: 30,
+  },
+  adWrapper: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: 'transparent',
   },
 });
 
