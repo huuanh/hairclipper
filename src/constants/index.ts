@@ -6,6 +6,7 @@ export const SCREEN_NAMES = {
   
   // Main Tabs
   HOME: 'Home',
+  SETTINGS: 'Settings',
   
   // Feature Screens
   HAIR_CLIPPER: 'HairClipper',

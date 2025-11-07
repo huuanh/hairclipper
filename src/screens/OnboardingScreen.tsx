@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -23,10 +23,13 @@ const { width, height } = Dimensions.get('window');
 const OnboardingScreen: React.FC = () => {
     const navigation = useNavigation();
     const [currentPage, setCurrentPage] = useState(0);
+    const pagerRef = useRef<PagerView>(null);
 
     const handleNext = async () => {
         if (currentPage < ONBOARDING_DATA.length - 1) {
-            setCurrentPage(currentPage + 1);
+            const nextPage = currentPage + 1;
+            setCurrentPage(nextPage);
+            pagerRef.current?.setPage(nextPage);
         } else {
             await handleGetStarted();
         }
@@ -89,6 +92,7 @@ const OnboardingScreen: React.FC = () => {
             style={styles.container}>
 
             <PagerView
+                ref={pagerRef}
                 style={styles.pagerView}
                 initialPage={0}
                 onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}>
@@ -97,18 +101,32 @@ const OnboardingScreen: React.FC = () => {
 
             {renderPagination()}
 
+            {currentPage === ONBOARDING_DATA.length - 1 && (
+                <View style={styles.footer}>
+                    <CustomButton
+                        title={currentPage === ONBOARDING_DATA.length - 1 ? 'Get Started' : 'Next'}
+                        onPress={handleNext}
+                        size="large"
+                        variant="outline"
+                        style={styles.nextButton}
+                        textStyle={styles.nextButtonText}
+                    />
+                </View>)}
             {/* Native Ads Section */}
             <View style={styles.nativeAdsContainer}>
                 <NativeAdComponent adUnitId={ADS_UNIT.NATIVE} hasMedia={true} />
             </View>
-            <View style={styles.footer}>
-                <CustomButton
-                    title={currentPage === ONBOARDING_DATA.length - 1 ? 'Get Started' : 'Next'}
-                    onPress={handleNext}
-                    size="large"
-                    style={styles.nextButton}
-                />
-            </View>
+            {currentPage !== ONBOARDING_DATA.length - 1 && (
+                <View style={styles.footer}>
+                    <CustomButton
+                        title={currentPage === ONBOARDING_DATA.length - 1 ? 'Get Started' : 'Next'}
+                        onPress={handleNext}
+                        size="large"
+                        variant="outline"
+                        style={styles.nextButton}
+                        textStyle={styles.nextButtonText}
+                    />
+                </View>)}
         </LinearGradient>
     );
 };
@@ -213,6 +231,12 @@ const styles = StyleSheet.create({
     },
     nextButton: {
         width: '100%',
+        backgroundColor: 'transparent',
+        borderWidth: 0,
+    },
+    nextButtonText: {
+        textDecorationLine: 'underline',
+        color: Colors.white,
     },
 });
 

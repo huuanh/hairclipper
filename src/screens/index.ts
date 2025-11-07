@@ -1,6 +1,7 @@
 export { default as LoadingScreen } from './LoadingScreen';
 export { default as OnboardingScreen } from './OnboardingScreen';
 export { default as HomeScreen } from './HomeScreen';
+export { default as SettingsScreen } from './SettingsScreen';
 export { default as HairClipperScreen } from './HairClipperScreen';
 export { default as HairClipperDetailScreen } from './HairClipperDetailScreen';
 export { default as DIYMakeupScreen } from './DIYMakeupScreen';

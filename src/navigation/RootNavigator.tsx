@@ -9,6 +9,7 @@ import {
   LoadingScreen,
   OnboardingScreen,
   HomeScreen,
+  SettingsScreen,
   HairClipperScreen,
   HairClipperDetailScreen,
   DIYMakeupScreen,
@@ -24,6 +25,7 @@ export type RootStackParamList = {
   [SCREEN_NAMES.LOADING]: undefined;
   [SCREEN_NAMES.ONBOARDING]: undefined;
   [SCREEN_NAMES.HOME]: undefined;
+  [SCREEN_NAMES.SETTINGS]: undefined;
   [SCREEN_NAMES.HAIR_CLIPPER]: undefined;
   [SCREEN_NAMES.HAIR_CLIPPER_DETAIL]: { clipper: any };
   [SCREEN_NAMES.DIY_MAKEUP]: undefined;
@@ -76,6 +78,7 @@ const RootNavigator: React.FC = () => {
         <Stack.Screen name={SCREEN_NAMES.LOADING} component={LoadingScreen} />
         <Stack.Screen name={SCREEN_NAMES.ONBOARDING} component={OnboardingScreen} />
         <Stack.Screen name={SCREEN_NAMES.HOME} component={HomeScreen} />
+        <Stack.Screen name={SCREEN_NAMES.SETTINGS} component={SettingsScreen} />
         <Stack.Screen name={SCREEN_NAMES.HAIR_CLIPPER} component={HairClipperScreen} />
         <Stack.Screen name={SCREEN_NAMES.HAIR_CLIPPER_DETAIL} component={HairClipperDetailScreen} />
         <Stack.Screen name={SCREEN_NAMES.DIY_MAKEUP} component={DIYMakeupScreen} />

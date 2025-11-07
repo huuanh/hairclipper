@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { Colors, GradientStyles } from '../constants/colors';
 import { SCREEN_NAMES } from '../constants';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
+import { IAPModal } from '../components';
 
 const { width } = Dimensions.get('window');
 
@@ -55,9 +56,27 @@ const MENU_ITEMS = [
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const [showIAPModal, setShowIAPModal] = useState(false);
 
   const handleMenuPress = (screen: string) => {
     navigation.navigate(screen as never);
+  };
+
+  const handleSettingsPress = () => {
+    navigation.navigate(SCREEN_NAMES.SETTINGS as never);
+  };
+
+  const handleVIPPress = () => {
+    setShowIAPModal(true);
+  };
+
+  const handleCloseIAPModal = () => {
+    setShowIAPModal(false);
+  };
+
+  const handlePurchase = () => {
+    console.log('Purchase initiated from Home');
+    setShowIAPModal(false);
   };
 
   return (
@@ -74,10 +93,10 @@ const HomeScreen: React.FC = () => {
               <Text style={styles.title}>HAIR CLIPPER PRANK</Text>
             </View>
             <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
+              <TouchableOpacity style={styles.iconButton} onPress={handleVIPPress}>
                 <Image source={require('../../assets/icon/vip.png')} style={styles.iconImage} resizeMode="contain" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton} onPress={() => {}}>
+              <TouchableOpacity style={styles.iconButton} onPress={handleSettingsPress}>
                 <Image source={require('../../assets/icon/setting.png')} style={styles.iconImage} resizeMode="contain" />
               </TouchableOpacity>
             </View>
@@ -109,7 +128,7 @@ const HomeScreen: React.FC = () => {
                         </TouchableOpacity>
                       </View>
                     </View>
-                    <Image source={item.image} style={styles.cardImage} resizeMode="contain" />
+                    <Image source={item.image} style={styles.cardImage}  />
                   </View>
                 </ImageBackground>
               </TouchableOpacity>
@@ -123,6 +142,12 @@ const HomeScreen: React.FC = () => {
             <NativeAdComponent />
           </View>
       </View>
+      
+      <IAPModal
+        visible={showIAPModal}
+        onClose={handleCloseIAPModal}
+        onPurchase={handlePurchase}
+      />
     </LinearGradient>
   );
 };
@@ -242,8 +267,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   cardImage: {
-    width: 110,
-    height: 110,
+    width: 120,
+    height: 120,
+    resizeMode: "contain",
+    position: 'absolute',
+    bottom: -24,
+    right: -12,
   },
   adWrapper: {
     marginTop: 18,
