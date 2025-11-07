@@ -12,23 +12,26 @@ import {
   Dimensions,
   PermissionsAndroid,
   Platform,
+  Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
-import { 
-  PanGestureHandler, 
-  PinchGestureHandler, 
+import {
+  PanGestureHandler,
+  PinchGestureHandler,
   RotationGestureHandler,
-  State 
+  State
 } from 'react-native-gesture-handler';
 import ViewShot from 'react-native-view-shot';
 import * as ImageManipulator from 'expo-image-manipulator';
-import RNFS from 'react-native-fs';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
+import Share from 'react-native-share';
 
 import { CustomButton } from '../components';
 import { Colors, GradientStyles } from '../constants/colors';
 import { RootStackParamList } from '../navigation/RootNavigator';
+import { NativeAdComponent } from '../utils/NativeAdComponent';
 
 type DIYMakeupEditRouteProp = RouteProp<RootStackParamList, 'DIYMakeupEdit'>;
 
@@ -134,12 +137,14 @@ const DIYMakeupEditScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const route = useRoute<DIYMakeupEditRouteProp>();
   const { imageUri } = route.params;
-  
+
   const viewShotRef = useRef<ViewShot>(null);
   const [activeTab, setActiveTab] = useState<TabType>('hair');
   const [placedItems, setPlacedItems] = useState<PlacedItem[]>([]);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isGesturing, setIsGesturing] = useState<boolean>(false);
+  const [showSaveSuccess, setShowSaveSuccess] = useState<boolean>(false);
+  const [savedImageUri, setSavedImageUri] = useState<string | null>(null);
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -154,7 +159,7 @@ const DIYMakeupEditScreen: React.FC = () => {
     const existingItemsCount = placedItems.length;
     const offsetX = (existingItemsCount % 3) * 30; // Stagger horizontally
     const offsetY = Math.floor(existingItemsCount / 3) * 30; // Stagger vertically
-    
+
     const newItem: PlacedItem = {
       id: `${activeTab}-${itemId}-${Date.now()}`,
       category: activeTab,
@@ -170,11 +175,17 @@ const DIYMakeupEditScreen: React.FC = () => {
   const requestStoragePermission = async () => {
     if (Platform.OS === 'android') {
       try {
+        // For Android 13+ (API 33+), we need different permissions
+        const androidVersion = Platform.Version as number;
+        const permission = androidVersion >= 33
+          ? 'android.permission.READ_MEDIA_IMAGES'
+          : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+
         const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          permission,
           {
             title: 'Storage Permission',
-            message: 'App needs storage permission to save photos',
+            message: 'App needs storage permission to save photos to gallery',
             buttonNeutral: 'Ask Me Later',
             buttonNegative: 'Cancel',
             buttonPositive: 'OK',
@@ -201,16 +212,58 @@ const DIYMakeupEditScreen: React.FC = () => {
         const uri = await viewShotRef.current.capture();
 
         // Save to device gallery
-        const timestamp = new Date().getTime();
-        const destPath = `${RNFS.DownloadDirectoryPath}/edited_photo_${timestamp}.jpg`;
-        
-        await RNFS.copyFile(uri, destPath);
-        
-        Alert.alert('Success', 'Photo saved to Downloads folder!');
+        await CameraRoll.save(uri, { type: 'photo' });
+
+        // Show success popup with saved image
+        setSavedImageUri(uri);
+        setShowSaveSuccess(true);
       }
     } catch (error) {
       console.error('Error saving photo:', error);
       Alert.alert('Error', 'Failed to save photo. Please try again.');
+    }
+  };
+
+  const handleEditMore = () => {
+    setShowSaveSuccess(false);
+    navigation.goBack(); // Back to DIYMakeupScreen
+  };
+
+  const handleContinueEditing = () => {
+    setShowSaveSuccess(false);
+    // Continue editing current photo
+  };
+
+  const handleBackToHome = () => {
+    setShowSaveSuccess(false);
+    navigation.navigate('Home' as never);
+  };
+
+  const handleShare = async () => {
+    try {
+      if (!savedImageUri) {
+        Alert.alert('Error', 'No image to share');
+        return;
+      }
+
+      const shareOptions = {
+        title: 'Hair Makeover',
+        message: 'Check out my awesome hair makeover created with Hair Clipper App! 💇‍♂️✨',
+        url: savedImageUri,
+        type: 'image/jpeg',
+        subject: 'Hair Makeover from Hair Clipper App',
+        failOnCancel: false,
+        showAppsToView: true,
+      };
+
+      await Share.open(shareOptions);
+      console.log('Share dialog opened successfully');
+    } catch (error: any) {
+      // Don't show error if user simply cancelled the share
+      if (error?.message && !error.message.includes('User did not share') && !error.message.includes('cancelled')) {
+        console.error('Error sharing:', error);
+        Alert.alert('Error', 'Failed to share image. Please try again.');
+      }
     }
   };
 
@@ -235,15 +288,15 @@ const DIYMakeupEditScreen: React.FC = () => {
   const handleGestureStateChange = (itemId: string) => (event: any) => {
     if (event.nativeEvent.state === State.BEGAN) {
       // Gesture started - save initial position
-      setPlacedItems(prev => prev.map(item => 
+      setPlacedItems(prev => prev.map(item =>
         item.id === itemId
-          ? { 
-              ...item, 
-              initialX: item.x, 
-              initialY: item.y,
-              initialScale: item.scale,
-              initialRotation: item.rotation
-            }
+          ? {
+            ...item,
+            initialX: item.x,
+            initialY: item.y,
+            initialScale: item.scale,
+            initialRotation: item.rotation
+          }
           : item
       ));
       setSelectedItemId(itemId);
@@ -340,7 +393,7 @@ const DIYMakeupEditScreen: React.FC = () => {
 
   const handleZoomGestureStateChange = (itemId: string) => (event: any) => {
     if (event.nativeEvent.state === State.BEGAN) {
-      setPlacedItems(prev => prev.map(item => 
+      setPlacedItems(prev => prev.map(item =>
         item.id === itemId
           ? { ...item, initialScale: item.scale }
           : item
@@ -385,7 +438,7 @@ const DIYMakeupEditScreen: React.FC = () => {
 
   const handleRotateGestureStateChange = (itemId: string) => (event: any) => {
     if (event.nativeEvent.state === State.BEGAN) {
-      setPlacedItems(prev => prev.map(item => 
+      setPlacedItems(prev => prev.map(item =>
         item.id === itemId
           ? { ...item, initialRotation: item.rotation }
           : item
@@ -460,7 +513,7 @@ const DIYMakeupEditScreen: React.FC = () => {
                 case 'baldHead': overlayImage = getBaldHeadImage(item.itemId); break;
                 default: return null;
               }
-              
+
               return (
                 <PanGestureHandler
                   key={item.id}
@@ -502,7 +555,7 @@ const DIYMakeupEditScreen: React.FC = () => {
                                 style={styles.controlButtonIcon}
                               />
                             </TouchableOpacity>
-                            
+
                             <PanGestureHandler
                               onGestureEvent={handleZoomGestureEvent(item.id)}
                               onHandlerStateChange={handleZoomGestureStateChange(item.id)}
@@ -514,7 +567,7 @@ const DIYMakeupEditScreen: React.FC = () => {
                                 />
                               </View>
                             </PanGestureHandler>
-                            
+
                             <PanGestureHandler
                               onGestureEvent={handleRotateGestureEvent(item.id)}
                               onHandlerStateChange={handleRotateGestureStateChange(item.id)}
@@ -528,7 +581,7 @@ const DIYMakeupEditScreen: React.FC = () => {
                             </PanGestureHandler>
                           </>
                         )}
-                        
+
                         <Image
                           source={overlayImage}
                           style={styles.placedItemImage}
@@ -553,12 +606,12 @@ const DIYMakeupEditScreen: React.FC = () => {
                 ]}
                 onPress={() => handleTabPress(tab.key)}
                 activeOpacity={0.8}>
-                <Image 
-                  source={tab.icon} 
+                <Image
+                  source={tab.icon}
                   style={[
                     styles.tabIcon,
                     activeTab === tab.key ? styles.tabIconActive : styles.tabIconInactive
-                  ]} 
+                  ]}
                 />
                 <Text style={[
                   styles.tabText,
@@ -589,6 +642,64 @@ const DIYMakeupEditScreen: React.FC = () => {
           </View>
         </View>
       </View>
+
+      {/* Save Success Popup */}
+      <Modal
+        visible={showSaveSuccess}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSaveSuccess(false)}
+      >
+        <View style={styles.popupOverlay}>
+          <View style={styles.popupContainer}>
+            <Text style={styles.popupTitle}>Image saved successfully!!!</Text>
+
+            <View style={styles.popupTop}>
+              {savedImageUri && (
+                <Image
+                  source={{ uri: savedImageUri }}
+                  style={styles.popupImage}
+                  resizeMode="cover"
+                />
+
+              )}
+              <View style={styles.popupTopRight}>
+                <TouchableOpacity
+                  style={[styles.popupButton, styles.editMoreButton]}
+                  onPress={handleEditMore}
+                >
+                  <Text style={styles.editMoreButtonText}>Edit more</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.popupButton, styles.continueButton]}
+                  onPress={handleContinueEditing}
+                >
+                  <Text style={styles.continueButtonText}>Continue editing</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.adWrapper}>
+              <NativeAdComponent hasMedia={true} />
+            </View>
+
+            <TouchableOpacity
+              style={styles.shareButton}
+              onPress={handleShare}
+            >
+              <Text style={styles.shareButtonText}>Share</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.popupButton, styles.backToHomeButton]}
+              onPress={handleBackToHome}
+            >
+              <Text style={styles.backToHomeButtonText}>Back to home</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 };
@@ -768,6 +879,102 @@ const styles = StyleSheet.create({
   placedItemImage: {
     width: '100%',
     height: '100%',
+  },
+  // Popup styles
+  popupOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(214, 32, 32, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2000,
+  },
+  popupContainer: {
+    backgroundColor: Colors.background,
+    // borderRadius: 20,
+    padding: 20,
+    width: screenWidth,
+    height: screenHeight,
+    alignItems: 'center',
+  },
+  popupTop: {
+    flexDirection: 'row',
+    // height: 2,
+  },
+  popupTopRight: {
+    flex: 2,
+    paddingLeft: 20,
+  },
+  popupTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFD700', // Yellow color like in image
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  popupImage: {
+    flex: 1,
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  popupButton: {
+    width: '100%',
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  editMoreButton: {
+    backgroundColor: '#8B5CF6', // Purple like in image
+  },
+  editMoreButtonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  continueButton: {
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.gray,
+  },
+  adWrapper: {
+    width: '100%',
+    paddingVertical: 10,
+  },
+  continueButtonText: {
+    color: Colors.background,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  shareButton: {
+    width: '100%',
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginVertical: 5,
+    backgroundColor: Colors.white,
+    borderWidth: 2,
+    borderColor: Colors.white,
+  },
+  shareButtonText: {
+    color: Colors.background,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  backToHomeButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#8B5CF6',
+  },
+  backToHomeButtonText: {
+    color: '#8B5CF6',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
