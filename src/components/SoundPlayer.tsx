@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Sound from 'react-native-sound';
-import { Vibration } from 'react-native';
+import { NativeModules, Vibration } from 'react-native';
+const { FlashModule } = NativeModules;
 
 interface SoundPlayerProps {
   soundFile: string; // Chỉ sử dụng string paths
@@ -68,23 +69,45 @@ export const useSoundPlayer = ({
   // Flash control functions
   const startFlashing = () => {
     if (flash && !flashIntervalRef.current) {
-      console.log('🔦 Starting flash');
-      flashIntervalRef.current = setInterval(() => {
-        setIsFlashing(prev => {
-          const newState = !prev;
-          if (onFlashChange) onFlashChange(newState);
-          return newState;
-        });
+      console.log('🔦 Starting flash with FlashModule');
+      stopFlashing(); // Dừng interval cũ nếu có
+      
+      let on = false;
+      flashIntervalRef.current = setInterval(async () => {
+        on = !on;
+        setIsFlashing(on);
+        if (onFlashChange) onFlashChange(on);
+        
+        try {
+          if (FlashModule && FlashModule.switchFlash) {
+            await FlashModule.switchFlash(on);
+            console.log('FlashModule state:', on ? 'ON' : 'OFF');
+          } else {
+            console.log('FlashModule not available, using UI flash only');
+          }
+        } catch (error) {
+          console.log('FlashModule error:', error);
+        }
       }, 120); // Flash every 120ms
     }
   };
-
   const stopFlashing = () => {
     if (flashIntervalRef.current) {
       console.log('🔦 Stopping flash');
       clearInterval(flashIntervalRef.current);
       flashIntervalRef.current = null;
     }
+    
+    // Tắt flash device
+    try {
+      if (FlashModule && FlashModule.switchFlash) {
+        FlashModule.switchFlash(false);
+        console.log('FlashModule turned OFF');
+      }
+    } catch (error) {
+      console.log('FlashModule turn off error:', error);
+    }
+    
     setIsFlashing(false);
     if (onFlashChange) onFlashChange(false);
   };

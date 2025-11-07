@@ -14,12 +14,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import type { NavigationProp } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import Sound from 'react-native-sound';
 
 import { CustomButton } from '../components';
 import { useSoundPlayer } from '../components/SoundPlayer';
-import { useDeviceFlash } from '../hooks/useDeviceFlash';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { Colors, GradientStyles } from '../constants/colors';
 import { RootStackParamList } from '../navigation/RootNavigator';
@@ -45,7 +45,7 @@ const getClipperImage = (id: number) => {
 type HairClipperDetailRouteProp = RouteProp<RootStackParamList, 'HairClipperDetail'>;
 
 const HairClipperDetailScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<HairClipperDetailRouteProp>();
   const { clipper } = route.params;
   const insets = useSafeAreaInsets();
@@ -72,9 +72,6 @@ const HairClipperDetailScreen: React.FC = () => {
   useEffect(() => {
     console.log('Flash state changed:', { flashEnabled, soundFlashing });
   }, [flashEnabled, soundFlashing]);
-
-  // Device flash hook
-  useDeviceFlash(soundFlashing && flashEnabled, flashEnabled);
 
   const handlePlayAfterSelect = () => {
     setShowTimeModal(true);
@@ -105,6 +102,7 @@ const HairClipperDetailScreen: React.FC = () => {
           if (prev === 1) {
             // Khi countdown kết thúc, tự động phát nhạc với flash
             setIsActive(true);
+            setPlayAfter(0); // Reset playAfter sau khi phát
             playSound();
           }
           return prev - 1;
@@ -160,8 +158,22 @@ const HairClipperDetailScreen: React.FC = () => {
   };
 
   const handleClipperSelect = (selectedClipper: any) => {
-    // For now, just show selected clipper without navigation
     console.log('Selected clipper:', selectedClipper.name);
+    
+    // Dừng âm thanh hiện tại nếu đang phát
+    if (isActive) {
+      stopSound();
+      setIsActive(false);
+    }
+    
+    // Reset các state về mặc định
+    setCountdown(0);
+    setPlayAfter(0);
+    setIsZoomedIn(false);
+    setShowTimeModal(false);
+    
+    // Navigate đến detail screen với clipper mới
+    navigation.navigate('HairClipperDetail', { clipper: selectedClipper });
   };
 
   const otherClippers = HAIR_CLIPPERS.filter(c => c.id !== clipper.id);
@@ -274,7 +286,7 @@ const HairClipperDetailScreen: React.FC = () => {
 
         {/* Section 5: Other Clippers List */}
         {!isZoomedIn && (
-          <>
+          <View style={styles.otherClippersSection}>
             <FlatList
               data={otherClippers}
               renderItem={({ item }) => (
@@ -298,13 +310,16 @@ const HairClipperDetailScreen: React.FC = () => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.otherClippersList}
             />
-
-            <View style={styles.adWrapper}>
-              <NativeAdComponent />
-            </View>
-          </>
+          </View>
         )}
       </View>
+
+      {/* Ad Section - Moved outside main container */}
+      {!isZoomedIn && (
+        <View style={styles.adWrapper}>
+          <NativeAdComponent />
+        </View>
+      )}
 
       {/* Flash Overlay */}
       {soundFlashing && flashEnabled && (
@@ -530,10 +545,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  otherClippersSection: {
+    height: 80, // Fixed height để đảm bảo scroll hoạt động
+    marginBottom: 10,
+  },
   otherClippersList: {
-    flex: 1,
     paddingHorizontal: 20,
-    // paddingVertical: 10,
+    paddingVertical: 10,
   },
   otherClipperItem: {
     width: 60,
