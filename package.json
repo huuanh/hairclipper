@@ -17,8 +17,10 @@
     "@react-navigation/bottom-tabs": "^7.7.3",
     "@react-navigation/native": "^7.1.19",
     "@react-navigation/stack": "^7.6.2",
+    "expo-image-manipulator": "^14.0.7",
     "react": "19.1.1",
     "react-native": "0.82.1",
+    "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.29.1",
     "react-native-google-mobile-ads": "^16.0.0",
     "react-native-iap": "^14.4.35",
@@ -30,7 +32,8 @@
     "react-native-screens": "^4.18.0",
     "react-native-sound": "^0.13.0",
     "react-native-torch": "^1.2.0",
-    "react-native-vector-icons": "^10.3.0"
+    "react-native-vector-icons": "^10.3.0",
+    "react-native-view-shot": "^4.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,22 @@ import {
   Alert,
   Image,
   ImageBackground,
+  Dimensions,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
+import { 
+  PanGestureHandler, 
+  PinchGestureHandler, 
+  RotationGestureHandler,
+  State 
+} from 'react-native-gesture-handler';
+import ViewShot from 'react-native-view-shot';
+import * as ImageManipulator from 'expo-image-manipulator';
+import RNFS from 'react-native-fs';
 
 import { CustomButton } from '../components';
 import { Colors, GradientStyles } from '../constants/colors';
@@ -27,6 +39,22 @@ interface MakeupItem {
   image: any;
   category: TabType;
 }
+
+interface PlacedItem {
+  id: string;
+  category: TabType;
+  itemId: number;
+  x: number;
+  y: number;
+  scale: number;
+  rotation: number;
+  initialX?: number;
+  initialY?: number;
+  initialScale?: number;
+  initialRotation?: number;
+}
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const getHairImage = (id: number) => {
   switch (id) {
@@ -107,8 +135,11 @@ const DIYMakeupEditScreen: React.FC = () => {
   const route = useRoute<DIYMakeupEditRouteProp>();
   const { imageUri } = route.params;
   
+  const viewShotRef = useRef<ViewShot>(null);
   const [activeTab, setActiveTab] = useState<TabType>('hair');
-  const [selectedItems, setSelectedItems] = useState<{ [key in TabType]?: number }>({});
+  const [placedItems, setPlacedItems] = useState<PlacedItem[]>([]);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [isGesturing, setIsGesturing] = useState<boolean>(false);
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -119,15 +150,264 @@ const DIYMakeupEditScreen: React.FC = () => {
   };
 
   const handleItemPress = (itemId: number) => {
-    setSelectedItems(prev => ({
-      ...prev,
-      [activeTab]: prev[activeTab] === itemId ? undefined : itemId,
+    // Calculate position to avoid overlapping with existing items
+    const existingItemsCount = placedItems.length;
+    const offsetX = (existingItemsCount % 3) * 30; // Stagger horizontally
+    const offsetY = Math.floor(existingItemsCount / 3) * 30; // Stagger vertically
+    
+    const newItem: PlacedItem = {
+      id: `${activeTab}-${itemId}-${Date.now()}`,
+      category: activeTab,
+      itemId: itemId,
+      x: (screenWidth / 2 - 50) + offsetX,
+      y: 150 + offsetY,
+      scale: 1,
+      rotation: 0,
+    };
+    setPlacedItems(prev => [...prev, newItem]);
+  };
+
+  const requestStoragePermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          {
+            title: 'Storage Permission',
+            message: 'App needs storage permission to save photos',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleSavePress = async () => {
+    try {
+      const hasPermission = await requestStoragePermission();
+      if (!hasPermission) {
+        Alert.alert('Permission Required', 'Storage permission is required to save photos.');
+        return;
+      }
+
+      if (viewShotRef.current?.capture) {
+        const uri = await viewShotRef.current.capture();
+
+        // Save to device gallery
+        const timestamp = new Date().getTime();
+        const destPath = `${RNFS.DownloadDirectoryPath}/edited_photo_${timestamp}.jpg`;
+        
+        await RNFS.copyFile(uri, destPath);
+        
+        Alert.alert('Success', 'Photo saved to Downloads folder!');
+      }
+    } catch (error) {
+      console.error('Error saving photo:', error);
+      Alert.alert('Error', 'Failed to save photo. Please try again.');
+    }
+  };
+
+  const handleGestureEvent = (itemId: string) => (event: any) => {
+    const { translationX, translationY } = event.nativeEvent;
+    setPlacedItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        const initialX = item.initialX !== undefined ? item.initialX : item.x;
+        const initialY = item.initialY !== undefined ? item.initialY : item.y;
+        return {
+          ...item,
+          x: initialX + translationX,
+          y: initialY + translationY,
+          initialX,
+          initialY,
+        };
+      }
+      return item;
     }));
   };
 
-  const handleSavePress = () => {
-    Alert.alert('Success', 'Photo saved with makeup effects!');
-    navigation.goBack();
+  const handleGestureStateChange = (itemId: string) => (event: any) => {
+    if (event.nativeEvent.state === State.BEGAN) {
+      // Gesture started - save initial position
+      setPlacedItems(prev => prev.map(item => 
+        item.id === itemId
+          ? { 
+              ...item, 
+              initialX: item.x, 
+              initialY: item.y,
+              initialScale: item.scale,
+              initialRotation: item.rotation
+            }
+          : item
+      ));
+      setSelectedItemId(itemId);
+    } else if (event.nativeEvent.state === State.END) {
+      // Gesture ended - finalize position
+      const { translationX, translationY } = event.nativeEvent;
+      setPlacedItems(prev => prev.map(item => {
+        if (item.id === itemId) {
+          const initialX = item.initialX !== undefined ? item.initialX : item.x;
+          const initialY = item.initialY !== undefined ? item.initialY : item.y;
+          return {
+            ...item,
+            x: initialX + translationX,
+            y: initialY + translationY,
+            initialX: undefined,
+            initialY: undefined,
+            initialScale: undefined,
+            initialRotation: undefined,
+          };
+        }
+        return item;
+      }));
+      setSelectedItemId(null);
+    }
+  };
+
+  const handlePinchEvent = (itemId: string) => (event: any) => {
+    const { scale } = event.nativeEvent;
+    setIsGesturing(true);
+    setPlacedItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        const initialScale = item.initialScale !== undefined ? item.initialScale : item.scale;
+        const newScale = Math.max(0.5, Math.min(3, initialScale * scale)); // Limit scale between 0.5x and 3x
+        return {
+          ...item,
+          scale: newScale,
+          initialScale,
+        };
+      }
+      return item;
+    }));
+  };
+
+  const handlePinchStateChange = (itemId: string) => (event: any) => {
+    if (event.nativeEvent.state === State.END || event.nativeEvent.state === State.CANCELLED) {
+      setIsGesturing(false);
+    }
+  };
+
+  const handleRotationEvent = (itemId: string) => (event: any) => {
+    const { rotation } = event.nativeEvent;
+    setIsGesturing(true);
+    setPlacedItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        const initialRotation = item.initialRotation !== undefined ? item.initialRotation : item.rotation;
+        const newRotation = initialRotation + (rotation * 180) / Math.PI; // Convert to degrees
+        return {
+          ...item,
+          rotation: newRotation,
+          initialRotation,
+        };
+      }
+      return item;
+    }));
+  };
+
+  const handleRotationStateChange = (itemId: string) => (event: any) => {
+    if (event.nativeEvent.state === State.END || event.nativeEvent.state === State.CANCELLED) {
+      setIsGesturing(false);
+    }
+  };
+
+  const removeItem = (itemId: string) => {
+    setPlacedItems(prev => prev.filter(item => item.id !== itemId));
+  };
+
+  const handleZoomGestureEvent = (itemId: string) => (event: any) => {
+    const { translationY } = event.nativeEvent;
+    setPlacedItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        const initialScale = item.initialScale !== undefined ? item.initialScale : item.scale;
+        // Kéo lên = zoom in (scale tăng), kéo xuống = zoom out (scale giảm)
+        const scaleDelta = -translationY * 0.01; // Negative để kéo lên là zoom in
+        const newScale = Math.max(0.5, Math.min(3, initialScale + scaleDelta));
+        return {
+          ...item,
+          scale: newScale,
+          initialScale,
+        };
+      }
+      return item;
+    }));
+  };
+
+  const handleZoomGestureStateChange = (itemId: string) => (event: any) => {
+    if (event.nativeEvent.state === State.BEGAN) {
+      setPlacedItems(prev => prev.map(item => 
+        item.id === itemId
+          ? { ...item, initialScale: item.scale }
+          : item
+      ));
+      setIsGesturing(true);
+    } else if (event.nativeEvent.state === State.END || event.nativeEvent.state === State.CANCELLED) {
+      const { translationY } = event.nativeEvent;
+      setPlacedItems(prev => prev.map(item => {
+        if (item.id === itemId) {
+          const initialScale = item.initialScale !== undefined ? item.initialScale : item.scale;
+          const scaleDelta = -translationY * 0.01;
+          const finalScale = Math.max(0.5, Math.min(3, initialScale + scaleDelta));
+          return {
+            ...item,
+            scale: finalScale,
+            initialScale: undefined,
+          };
+        }
+        return item;
+      }));
+      setIsGesturing(false);
+    }
+  };
+
+  const handleRotateGestureEvent = (itemId: string) => (event: any) => {
+    const { translationX } = event.nativeEvent;
+    setPlacedItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        const initialRotation = item.initialRotation !== undefined ? item.initialRotation : item.rotation;
+        // Kéo phải = xoay thuận (tăng), kéo trái = xoay ngược (giảm)
+        const rotationDelta = translationX * 0.5; // 0.5 để điều khiển tốc độ xoay
+        const newRotation = initialRotation + rotationDelta;
+        return {
+          ...item,
+          rotation: newRotation,
+          initialRotation,
+        };
+      }
+      return item;
+    }));
+  };
+
+  const handleRotateGestureStateChange = (itemId: string) => (event: any) => {
+    if (event.nativeEvent.state === State.BEGAN) {
+      setPlacedItems(prev => prev.map(item => 
+        item.id === itemId
+          ? { ...item, initialRotation: item.rotation }
+          : item
+      ));
+      setIsGesturing(true);
+    } else if (event.nativeEvent.state === State.END || event.nativeEvent.state === State.CANCELLED) {
+      const { translationX } = event.nativeEvent;
+      setPlacedItems(prev => prev.map(item => {
+        if (item.id === itemId) {
+          const initialRotation = item.initialRotation !== undefined ? item.initialRotation : item.rotation;
+          const rotationDelta = translationX * 0.5;
+          const finalRotation = initialRotation + rotationDelta;
+          return {
+            ...item,
+            rotation: finalRotation,
+            initialRotation: undefined,
+          };
+        }
+        return item;
+      }));
+      setIsGesturing(false);
+    }
   };
 
   const getCurrentItems = (): MakeupItem[] => {
@@ -165,32 +445,102 @@ const DIYMakeupEditScreen: React.FC = () => {
 
         <View style={styles.content}>
           {/* Photo Preview */}
-          <View style={styles.photoContainer}>
+          <ViewShot ref={viewShotRef} style={styles.photoContainer}>
             <Image
               source={{ uri: imageUri }}
               style={styles.photoImage}
               resizeMode="cover"
             />
-            {/* Overlay selected makeup items */}
-            {Object.entries(selectedItems).map(([category, itemId]) => {
-              if (!itemId) return null;
+            {/* Render placed makeup items */}
+            {placedItems.map((item) => {
               let overlayImage;
-              switch (category) {
-                case 'hair': overlayImage = getHairImage(itemId); break;
-                case 'beard': overlayImage = getBeardImage(itemId); break;
-                case 'baldHead': overlayImage = getBaldHeadImage(itemId); break;
+              switch (item.category) {
+                case 'hair': overlayImage = getHairImage(item.itemId); break;
+                case 'beard': overlayImage = getBeardImage(item.itemId); break;
+                case 'baldHead': overlayImage = getBaldHeadImage(item.itemId); break;
                 default: return null;
               }
+              
               return (
-                <Image
-                  key={category}
-                  source={overlayImage}
-                  style={styles.overlayImage}
-                  resizeMode="cover"
-                />
+                <PanGestureHandler
+                  key={item.id}
+                  onGestureEvent={handleGestureEvent(item.id)}
+                  onHandlerStateChange={handleGestureStateChange(item.id)}
+                >
+                  <PinchGestureHandler
+                    onGestureEvent={handlePinchEvent(item.id)}
+                    onHandlerStateChange={handlePinchStateChange(item.id)}
+                  >
+                    <RotationGestureHandler
+                      onGestureEvent={handleRotationEvent(item.id)}
+                      onHandlerStateChange={handleRotationStateChange(item.id)}
+                    >
+                      <View
+                        style={[
+                          styles.draggableItem,
+                          selectedItemId === item.id && styles.selectedItem,
+                          isGesturing && selectedItemId === item.id && styles.gesturingItem,
+                          {
+                            left: item.x,
+                            top: item.y,
+                            transform: [
+                              { scale: item.scale },
+                              { rotate: `${item.rotation}deg` }
+                            ]
+                          }
+                        ]}
+                      >
+                        {/* Control buttons - only show when selected */}
+                        {selectedItemId === item.id && (
+                          <>
+                            <TouchableOpacity
+                              style={[styles.controlButton, styles.removeButton]}
+                              onPress={() => removeItem(item.id)}
+                            >
+                              <Image
+                                source={require('../../assets/icon/item_del.png')}
+                                style={styles.controlButtonIcon}
+                              />
+                            </TouchableOpacity>
+                            
+                            <PanGestureHandler
+                              onGestureEvent={handleZoomGestureEvent(item.id)}
+                              onHandlerStateChange={handleZoomGestureStateChange(item.id)}
+                            >
+                              <View style={[styles.controlButton, styles.zoomButton]}>
+                                <Image
+                                  source={require('../../assets/icon/item_zoom.png')}
+                                  style={styles.controlButtonIcon}
+                                />
+                              </View>
+                            </PanGestureHandler>
+                            
+                            <PanGestureHandler
+                              onGestureEvent={handleRotateGestureEvent(item.id)}
+                              onHandlerStateChange={handleRotateGestureStateChange(item.id)}
+                            >
+                              <View style={[styles.controlButton, styles.rotateButton]}>
+                                <Image
+                                  source={require('../../assets/icon/item_rotate.png')}
+                                  style={styles.controlButtonIcon}
+                                />
+                              </View>
+                            </PanGestureHandler>
+                          </>
+                        )}
+                        
+                        <Image
+                          source={overlayImage}
+                          style={styles.placedItemImage}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    </RotationGestureHandler>
+                  </PinchGestureHandler>
+                </PanGestureHandler>
               );
             })}
-          </View>
+          </ViewShot>
 
           {/* Tabs */}
           <View style={styles.tabsContainer}>
@@ -229,10 +579,7 @@ const DIYMakeupEditScreen: React.FC = () => {
               {getCurrentItems().map((item) => (
                 <TouchableOpacity
                   key={item.id}
-                  style={[
-                    styles.itemButton,
-                    selectedItems[activeTab] === item.id && styles.itemButtonSelected
-                  ]}
+                  style={styles.itemButton}
                   onPress={() => handleItemPress(item.id)}
                   activeOpacity={0.8}>
                   <Image source={item.image} style={styles.itemImage} />
@@ -360,6 +707,67 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 10,
+  },
+  draggableItem: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    zIndex: 1000,
+  },
+  selectedItem: {
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    borderRadius: 10,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+  },
+  gesturingItem: {
+    elevation: 8,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    borderColor: '#FFD700',
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+  },
+  controlButton: {
+    position: 'absolute',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1001,
+  },
+  removeButton: {
+    top: -14,
+    right: -14,
+    // backgroundColor: '#FF4444',
+  },
+  zoomButton: {
+    top: -14,
+    left: -14,
+    // backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rotateButton: {
+    bottom: -14,
+    right: -14,
+    // backgroundColor: '#2196F3',
+  },
+  controlButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  controlButtonIcon: {
+    width: 20,
+    height: 20,
+    // tintColor: 'white',
+  },
+  placedItemImage: {
+    width: '100%',
+    height: '100%',
   },
 });
 
