@@ -277,8 +277,9 @@ const styles = StyleSheet.create({
     right: -12,
   },
   adWrapper: {
-    marginTop: 18,
+    marginTop: 10,
     marginBottom: 10,
+    marginHorizontal: 20,
   },
   headerContainer: {
     paddingHorizontal: 20,
