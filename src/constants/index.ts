@@ -1,6 +1,7 @@
 export const SCREEN_NAMES = {
   // Main Stack
   LOADING: 'Loading',
+  LANGUAGE_SELECTION: 'LanguageSelection',
   ONBOARDING: 'Onboarding',
   MAIN_TABS: 'MainTabs',
   
@@ -49,4 +50,5 @@ export const ONBOARDING_DATA = [
 
 export const ASYNC_STORAGE_KEYS = {
   ONBOARDING_COMPLETED: '@hair_clipper_onboarding_completed',
+  SELECTED_LANGUAGE: '@hair_clipper_selected_language',
 } as const;

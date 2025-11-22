@@ -58,34 +58,35 @@ const SettingsScreen: React.FC = () => {
   };
 
   const handleLanguage = () => {
-    // Navigate to language selection
+    // Navigate to language selection with fromSettings flag
     console.log('Language pressed');
+    (navigation as any).navigate('LanguageSelection', { fromSettings: true });
   };
 
   const handleShare = async () => {
     // Open share functionality
     console.log('Share pressed');
     try {
-            const shareOptions = {
-                title: 'Share App',
-                message: 'Check out this amazing app! ' + 'https://play.google.com/store/apps/details?id=boom.bvr.recorder.pro',
-                url: 'https://play.google.com/store/apps/details?id=boom.hairclipper.funnyprank.haircut.sound'
-            };
+      const shareOptions = {
+        title: 'Share App',
+        message: 'Check out this amazing app! ' + 'https://play.google.com/store/apps/details?id=boom.bvr.recorder.pro',
+        url: 'https://play.google.com/store/apps/details?id=boom.hairclipper.funnyprank.haircut.sound'
+      };
 
-            const result = await Share.share(shareOptions);
-            
-            if (result.action === Share.sharedAction) {
-                if (result.activityType) {
-                    console.log('✅ App shared via:', result.activityType);
-                } else {
-                    console.log('✅ App shared successfully');
-                }
-            } else if (result.action === Share.dismissedAction) {
-                console.log('📱 Share dialog dismissed');
-            }
-        } catch (error) {
-            console.error('❌ Error sharing app:', error);
+      const result = await Share.share(shareOptions);
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          console.log('✅ App shared via:', result.activityType);
+        } else {
+          console.log('✅ App shared successfully');
         }
+      } else if (result.action === Share.dismissedAction) {
+        console.log('📱 Share dialog dismissed');
+      }
+    } catch (error) {
+      console.error('❌ Error sharing app:', error);
+    }
   };
 
   const handleVote = () => {
@@ -107,7 +108,7 @@ const SettingsScreen: React.FC = () => {
       // Open Play Store for rating
       const playStoreUrl = 'https://play.google.com/store/apps/details?id=boom.hairclipper.funnyprank.haircut.sound';
       const canOpen = await Linking.canOpenURL(playStoreUrl);
-      
+
       if (canOpen) {
         await Linking.openURL(playStoreUrl);
         console.log('✅ Play Store opened for rating');
@@ -124,18 +125,18 @@ const SettingsScreen: React.FC = () => {
     // Navigate to policy screen
     console.log('Policy pressed');
     try {
-            const privacyUrl = 'https://sites.google.com/boomstudio.vn/privacypolicyforboomgamesjsc';
-            const canOpen = await Linking.canOpenURL(privacyUrl);
-            
-            if (canOpen) {
-                await Linking.openURL(privacyUrl);
-                console.log('✅ Privacy policy opened successfully');
-            } else {
-                console.log('❌ Cannot open privacy policy URL');
-            }
-        } catch (error) {
-            console.error('❌ Error opening privacy policy:', error);
-        }
+      const privacyUrl = 'https://sites.google.com/boomstudio.vn/privacypolicyforboomgamesjsc';
+      const canOpen = await Linking.canOpenURL(privacyUrl);
+
+      if (canOpen) {
+        await Linking.openURL(privacyUrl);
+        console.log('✅ Privacy policy opened successfully');
+      } else {
+        console.log('❌ Cannot open privacy policy URL');
+      }
+    } catch (error) {
+      console.error('❌ Error opening privacy policy:', error);
+    }
   };
 
   const settingItems: SettingItem[] = [
@@ -239,11 +240,12 @@ const SettingsScreen: React.FC = () => {
             {settingItems.map(renderSettingItem)}
           </View>
 
-          {/* Native Ad */}
-          <View style={styles.adWrapper}>
-            <NativeAdComponent hasMedia={true} />
-          </View>
         </ScrollView>
+
+        {/* Native Ad */}
+        <View style={styles.adWrapper}>
+          <NativeAdComponent hasMedia={true} />
+        </View>
       </View>
 
       {/* IAP Modal */}
@@ -320,13 +322,14 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 10,
+    // paddingVertical: 15,
   },
   headerButton: {
     width: 40,
@@ -347,15 +350,15 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
   },
   premiumCard: {
-    marginBottom: 30,
+    marginBottom: 10,
     borderRadius: 20,
     overflow: 'hidden',
   },
   premiumGradient: {
-    padding: 20,
+    padding: 10,
   },
   premiumContent: {
     flexDirection: 'row',
@@ -388,13 +391,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 15,
     overflow: 'hidden',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     paddingVertical: 18,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
@@ -421,7 +424,8 @@ const styles = StyleSheet.create({
     tintColor: Colors.gray,
   },
   adWrapper: {
-    marginBottom: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
   },
   // Modal styles
   modalOverlay: {

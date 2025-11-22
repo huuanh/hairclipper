@@ -8,11 +8,12 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors, GradientStyles } from '../constants/colors';
 import AdManager from '../utils/AdManager';
 import RemoteConfigManager from '../utils/RemoteConfigManager';
-import { SCREEN_NAMES } from '../constants';
+import { SCREEN_NAMES, ASYNC_STORAGE_KEYS } from '../constants';
 
 const LoadingScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -34,6 +35,28 @@ const LoadingScreen: React.FC = () => {
       }
     };
 
+    const checkNavigationFlow = async () => {
+      try {
+        // DEVELOPMENT: Uncomment để test clean flow
+        // await AsyncStorage.clear();
+        
+        const onboardingCompleted = await AsyncStorage.getItem(ASYNC_STORAGE_KEYS.ONBOARDING_COMPLETED);
+        const languageSelected = await AsyncStorage.getItem(ASYNC_STORAGE_KEYS.SELECTED_LANGUAGE);
+        
+        console.log('Navigation check:', { onboardingCompleted, languageSelected });
+        
+        if (!languageSelected) {
+          navigation.navigate(SCREEN_NAMES.LANGUAGE_SELECTION as never);
+        } else {
+          navigation.navigate(SCREEN_NAMES.ONBOARDING as never);
+        }
+      } catch (error) {
+        console.error('Error checking navigation flow:', error);
+        // Default to language selection if error
+        navigation.navigate(SCREEN_NAMES.LANGUAGE_SELECTION as never);
+      }
+    };
+
     initializeServices();
 
     // Start rotation animation
@@ -47,9 +70,9 @@ const LoadingScreen: React.FC = () => {
     );
     rotateAnimation.start();
 
-    // Navigate to onboarding after 2 seconds
+    // Check navigation flow after 2 seconds
     const timer = setTimeout(() => {
-      navigation.navigate(SCREEN_NAMES.ONBOARDING as never);
+      checkNavigationFlow();
     }, 2000);
 
     return () => {

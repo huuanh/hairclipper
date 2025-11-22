@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SCREEN_NAMES, ASYNC_STORAGE_KEYS } from '../constants';
 import {
   LoadingScreen,
+  LanguageSelectionScreen,
   OnboardingScreen,
   HomeScreen,
   SettingsScreen,
@@ -23,6 +24,7 @@ import {
 
 export type RootStackParamList = {
   [SCREEN_NAMES.LOADING]: undefined;
+  [SCREEN_NAMES.LANGUAGE_SELECTION]: { fromSettings?: boolean };
   [SCREEN_NAMES.ONBOARDING]: undefined;
   [SCREEN_NAMES.HOME]: undefined;
   [SCREEN_NAMES.SETTINGS]: undefined;
@@ -40,42 +42,15 @@ export type RootStackParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 
 const RootNavigator: React.FC = () => {
-  const [initialRoute, setInitialRoute] = useState<string | null>(null);
-
-  useEffect(() => {
-    checkOnboardingStatus();
-  }, []);
-
-  const checkOnboardingStatus = async () => {
-    try {
-      const onboardingCompleted = await AsyncStorage.getItem(ASYNC_STORAGE_KEYS.ONBOARDING_COMPLETED);
-      if (onboardingCompleted === 'true') {
-        setInitialRoute(SCREEN_NAMES.HOME);
-      } else {
-        setInitialRoute(SCREEN_NAMES.LOADING);
-      }
-    } catch (error) {
-      console.error('Error checking onboarding status:', error);
-      setInitialRoute(SCREEN_NAMES.LOADING);
-    }
-  };
-
-  if (!initialRoute) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#1A1A2E' }}>
-        <Text style={{ color: 'white', fontSize: 18 }}>Loading...</Text>
-      </View>
-    );
-  }
-
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName={initialRoute as keyof RootStackParamList}
+        initialRouteName={SCREEN_NAMES.LOADING}
         screenOptions={{
           headerShown: false,
         }}>
         <Stack.Screen name={SCREEN_NAMES.LOADING} component={LoadingScreen} />
+        <Stack.Screen name={SCREEN_NAMES.LANGUAGE_SELECTION} component={LanguageSelectionScreen} />
         <Stack.Screen name={SCREEN_NAMES.ONBOARDING} component={OnboardingScreen} />
         <Stack.Screen name={SCREEN_NAMES.HOME} component={HomeScreen} />
         <Stack.Screen name={SCREEN_NAMES.SETTINGS} component={SettingsScreen} />
