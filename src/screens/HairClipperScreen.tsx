@@ -119,13 +119,14 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 10,
+    // paddingVertical: 15,
   },
   headerButton: {
     width: 40,
@@ -151,8 +152,8 @@ const styles = StyleSheet.create({
   },
   clipperItem: {
     width: '48%',
-    marginBottom: 15,
-    borderRadius: 8,
+    marginBottom: 12,
+    borderRadius: 16,
     overflow: 'hidden',
     elevation: 5,
     shadowColor: Colors.black,

@@ -67,10 +67,28 @@ export const useSoundPlayer = ({
   }, [soundFile]);
 
   // Flash control functions
-  const startFlashing = () => {
+  const startFlashing = async () => {
     if (flash && !flashIntervalRef.current) {
       console.log('🔦 Starting flash with FlashModule');
       stopFlashing(); // Dừng interval cũ nếu có
+      
+      // Check if device has flash first
+      try {
+        if (FlashModule && FlashModule.hasFlashlight) {
+          const hasFlash = await FlashModule.hasFlashlight();
+          if (!hasFlash) {
+            console.log('Device does not support flash, using UI flash only');
+            setIsFlashing(true);
+            if (onFlashChange) onFlashChange(true);
+            return;
+          }
+        }
+      } catch (error) {
+        console.log('Error checking flash capability:', error);
+        setIsFlashing(true);
+        if (onFlashChange) onFlashChange(true);
+        return;
+      }
       
       let on = false;
       flashIntervalRef.current = setInterval(async () => {
@@ -86,12 +104,12 @@ export const useSoundPlayer = ({
             console.log('FlashModule not available, using UI flash only');
           }
         } catch (error) {
-          console.log('FlashModule error:', error);
+          console.log('FlashModule error (continuing with UI flash only):', error);
         }
       }, 120); // Flash every 120ms
     }
   };
-  const stopFlashing = () => {
+  const stopFlashing = async () => {
     if (flashIntervalRef.current) {
       console.log('🔦 Stopping flash');
       clearInterval(flashIntervalRef.current);
@@ -101,11 +119,11 @@ export const useSoundPlayer = ({
     // Tắt flash device
     try {
       if (FlashModule && FlashModule.switchFlash) {
-        FlashModule.switchFlash(false);
+        await FlashModule.switchFlash(false);
         console.log('FlashModule turned OFF');
       }
     } catch (error) {
-      console.log('FlashModule turn off error:', error);
+      console.log('FlashModule turn off error (ignoring):', error);
     }
     
     setIsFlashing(false);

@@ -26,28 +26,28 @@ const MENU_ITEMS = [
   {
     id: 1,
     title: 'Hair Clipper',
-    subtitle: 'Prank your friend right now',
+    subtitle: 'Buzz their hair now!',
     image: require('../../assets/home/hairclipper.png'),
     screen: SCREEN_NAMES.HAIR_CLIPPER,
   },
   {
     id: 2,
     title: 'DIY Makeup',
-    subtitle: 'Prank your friend right now',
+    subtitle: 'Give them a glow-up prank!',
     image: require('../../assets/home/diymakeup.png'),
     screen: SCREEN_NAMES.DIY_MAKEUP,
   },
   {
     id: 3,
     title: 'Funny Sounds',
-    subtitle: 'Prank your friend right now',
+    subtitle: 'Hit them with a hilarious sound!',
     image: require('../../assets/home/funnysound.png'),
     screen: SCREEN_NAMES.FUNNY_SOUND,
   },
   {
     id: 4,
     title: 'Hair Dryer',
-    subtitle: 'Prank your friend right now',
+    subtitle: 'Blast them with a fake dryer!',
     image: require('../../assets/home/hairdryer.png'),
     screen: SCREEN_NAMES.HAIR_DRYER,
   },
@@ -155,9 +155,11 @@ const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   safeArea: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   scrollView: {
     flex: 1,
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
-    paddingVertical: 30,
+    paddingBottom: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -280,7 +282,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 10,
+    // paddingBottom: 10,
   },
   cardsScrollView: {
     flex: 1,

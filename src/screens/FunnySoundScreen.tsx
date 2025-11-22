@@ -144,13 +144,14 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    // paddingVertical: 15,
   },
   headerButton: {
     width: 40,
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   soundBackground: {
-    padding: 15,
+    padding: 5,
     minHeight: 140,
   },
   soundContent: {
@@ -216,8 +217,8 @@ const styles = StyleSheet.create({
   },
   vipBadge: {
     position: 'absolute',
-    top: 5,
-    right: 5,
+    top: 0,
+    right: 0,
     width: 20,
     height: 20,
     justifyContent: 'center',

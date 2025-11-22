@@ -51,6 +51,7 @@ interface PlacedItem {
   y: number;
   scale: number;
   rotation: number;
+  flipX: boolean;
   initialX?: number;
   initialY?: number;
   initialScale?: number;
@@ -168,6 +169,7 @@ const DIYMakeupEditScreen: React.FC = () => {
       y: 150 + offsetY,
       scale: 1,
       rotation: 0,
+      flipX: false,
     };
     setPlacedItems(prev => [...prev, newItem]);
   };
@@ -373,6 +375,12 @@ const DIYMakeupEditScreen: React.FC = () => {
     setPlacedItems(prev => prev.filter(item => item.id !== itemId));
   };
 
+  const flipItem = (itemId: string) => {
+    setPlacedItems(prev => prev.map(item => 
+      item.id === itemId ? { ...item, flipX: !item.flipX } : item
+    ));
+  };
+
   const handleZoomGestureEvent = (itemId: string) => (event: any) => {
     const { translationY } = event.nativeEvent;
     setPlacedItems(prev => prev.map(item => {
@@ -538,6 +546,7 @@ const DIYMakeupEditScreen: React.FC = () => {
                             top: item.y,
                             transform: [
                               { scale: item.scale },
+                              { scaleX: item.flipX ? -1 : 1 },
                               { rotate: `${item.rotation}deg` }
                             ]
                           }
@@ -547,7 +556,13 @@ const DIYMakeupEditScreen: React.FC = () => {
                         {selectedItemId === item.id && (
                           <>
                             <TouchableOpacity
-                              style={[styles.controlButton, styles.removeButton]}
+                              style={[
+                                styles.controlButton, 
+                                styles.removeButton,
+                                {
+                                  transform: [{ scale: 1 / item.scale }]
+                                }
+                              ]}
                               onPress={() => removeItem(item.id)}
                             >
                               <Image
@@ -560,7 +575,15 @@ const DIYMakeupEditScreen: React.FC = () => {
                               onGestureEvent={handleZoomGestureEvent(item.id)}
                               onHandlerStateChange={handleZoomGestureStateChange(item.id)}
                             >
-                              <View style={[styles.controlButton, styles.zoomButton]}>
+                              <View 
+                                style={[
+                                  styles.controlButton, 
+                                  styles.zoomButton,
+                                  {
+                                    transform: [{ scale: 1 / item.scale }]
+                                  }
+                                ]}
+                              >
                                 <Image
                                   source={require('../../assets/icon/item_zoom.png')}
                                   style={styles.controlButtonIcon}
@@ -568,11 +591,35 @@ const DIYMakeupEditScreen: React.FC = () => {
                               </View>
                             </PanGestureHandler>
 
+                            <TouchableOpacity
+                              style={[
+                                styles.controlButton, 
+                                styles.flipButton,
+                                {
+                                  transform: [{ scale: 1 / item.scale }]
+                                }
+                              ]}
+                              onPress={() => flipItem(item.id)}
+                            >
+                              <Image
+                                source={require('../../assets/icon/item_flip.png')}
+                                style={styles.controlButtonIcon}
+                              />
+                            </TouchableOpacity>
+
                             <PanGestureHandler
                               onGestureEvent={handleRotateGestureEvent(item.id)}
                               onHandlerStateChange={handleRotateGestureStateChange(item.id)}
                             >
-                              <View style={[styles.controlButton, styles.rotateButton]}>
+                              <View 
+                                style={[
+                                  styles.controlButton, 
+                                  styles.rotateButton,
+                                  {
+                                    transform: [{ scale: 1 / item.scale }]
+                                  }
+                                ]}
+                              >
                                 <Image
                                   source={require('../../assets/icon/item_rotate.png')}
                                   style={styles.controlButtonIcon}
@@ -710,13 +757,14 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 10,
+    // paddingVertical: 15,
   },
   headerButton: {
     width: 40,
@@ -739,10 +787,10 @@ const styles = StyleSheet.create({
   },
   photoContainer: {
     flex: 1,
-    margin: 20,
-    borderRadius: 20,
+    margin: 0,
+    // borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: Colors.backgroundLight,
+    backgroundColor: Colors.background,
     position: 'relative',
   },
   photoImage: {
@@ -758,17 +806,20 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     paddingVertical: 10,
     justifyContent: 'space-around',
   },
   tabButton: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 12,
+    flexDirection: 'row',
+    paddingVertical: 10,
+    paddingHorizontal: 2,
     marginHorizontal: 5,
-    borderRadius: 15,
+    borderRadius: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
   },
   tabButtonActive: {
     backgroundColor: Colors.primary,
@@ -776,7 +827,8 @@ const styles = StyleSheet.create({
   tabIcon: {
     width: 20,
     height: 20,
-    marginBottom: 5,
+    padding: 5,
+    marginRight: 8,
   },
   tabIconActive: {
     tintColor: Colors.white,
@@ -793,8 +845,8 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   itemsContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
   },
   itemsScrollView: {
     paddingRight: 20,
@@ -803,7 +855,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 15,
-    backgroundColor: Colors.backgroundLight,
+    backgroundColor: Colors.white,
     marginRight: 12,
     padding: 5,
     borderWidth: 2,
@@ -826,9 +878,9 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   selectedItem: {
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: Colors.primary,
-    borderRadius: 10,
+    // borderRadius: 10,
     backgroundColor: 'rgba(139, 92, 246, 0.1)',
   },
   gesturingItem: {
@@ -860,6 +912,11 @@ const styles = StyleSheet.create({
     // backgroundColor: '#4CAF50',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  flipButton: {
+    bottom: -14,
+    left: -14,
+    // backgroundColor: '#FF9800',
   },
   rotateButton: {
     bottom: -14,

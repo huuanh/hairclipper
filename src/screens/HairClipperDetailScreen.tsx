@@ -258,7 +258,7 @@ const HairClipperDetailScreen: React.FC = () => {
         {!isZoomedIn && (
           <View style={styles.controlsSection}>
             <View style={styles.playAfterContainer}>
-              <Text style={styles.controlLabel}>Play affter</Text>
+              <Text style={styles.controlLabel}>Play after</Text>
               <TouchableOpacity
                 style={styles.playAfterSelector}
                 onPress={handlePlayAfterSelect}>
@@ -379,6 +379,7 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   sectionsBackground: {
     flex: 15,
@@ -400,8 +401,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    // paddingHorizontal: 20,
+    // paddingVertical: 15,
     marginBottom: 10,
   },
   headerButton: {
@@ -572,7 +573,8 @@ const styles = StyleSheet.create({
   adWrapper: {
     paddingHorizontal: 10,
     paddingVertical: 10,
-    backgroundColor: 'transparent',
+    // backgroundColor: 'transparent',
+    backgroundColor: Colors.background,
   },
   // Modal styles
   modalOverlay: {

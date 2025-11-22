@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Animated,
   Easing,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -69,15 +70,15 @@ const LoadingScreen: React.FC = () => {
       end={GradientStyles.dark.end}
       style={styles.container}>
       <View style={styles.content}>
-        <Animated.View
+        {/* <Animated.View
           style={[
             styles.logoContainer,
             {
               transform: [{ rotate: spin }],
             },
           ]}>
-          <Text style={styles.logo}>✂️</Text>
-        </Animated.View>
+          <Image source={require('../../assets/icon/icon.png')} />
+        </Animated.View> */}
         <Text style={styles.title}>Hair Clipper Prank</Text>
         <Text style={styles.subtitle}>Loading...</Text>
       </View>

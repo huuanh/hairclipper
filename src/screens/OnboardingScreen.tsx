@@ -50,22 +50,22 @@ const OnboardingScreen: React.FC = () => {
     };
 
     const renderPage = (item: typeof ONBOARDING_DATA[0]) => (
-        <ScrollView key={item.id} style={styles.page} contentContainerStyle={styles.pageContent}>
+        <View key={item.id} style={styles.page}>
             {/* Image Section */}
             <View style={styles.imageContainer}>
                 <Image
                     source={item.image}
                     style={styles.onboardingImage}
-                    resizeMode="contain"
+                    resizeMode="cover"
                 />
+                {/* Content Section - Overlaid on image */}
+                <View style={styles.contentContainer}>
+                    {renderPagination()}
+                    <Text style={styles.title}>{item.title}</Text>
+                    <Text style={styles.subtitle}>{item.subtitle}</Text>
+                </View>
             </View>
-
-            {/* Content Section */}
-            <View style={styles.contentContainer}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.subtitle}>{item.subtitle}</Text>
-            </View>
-        </ScrollView>
+        </View>
     );
 
     const renderPagination = () => (
@@ -77,6 +77,7 @@ const OnboardingScreen: React.FC = () => {
                         styles.dot,
                         {
                             backgroundColor: index === currentPage ? Colors.primary : Colors.gray,
+                            width: index === currentPage ? 22 : 6,
                         },
                     ]}
                 />
@@ -98,8 +99,6 @@ const OnboardingScreen: React.FC = () => {
                 onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}>
                 {ONBOARDING_DATA.map(renderPage)}
             </PagerView>
-
-            {renderPagination()}
 
             {currentPage === ONBOARDING_DATA.length - 1 && (
                 <View style={styles.footer}>
@@ -137,49 +136,51 @@ const styles = StyleSheet.create({
     },
     pagerView: {
         flex: 1,
+        backgroundColor: Colors.background,
     },
     page: {
         flex: 1,
-    },
-    pageContent: {
-        flexGrow: 1,
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
+        width: width,
+        height: height * 0.5,
+        // backgroundColor: Colors.background,
     },
     imageContainer: {
-        flex: 0.5,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 20,
+        flex: 1,
+        position: 'relative',
+        width: width,
+        height: height * 0.5,
+        // backgroundColor: Colors.background,
     },
     onboardingImage: {
-        width: width * 0.99,
-        height: height * 0.35,
-        resizeMode: 'contain',
+        width: width,
+        height: height * 0.5,
+        // backgroundColor: Colors.background,
     },
     contentContainer: {
-        flex: 0.5,
-        justifyContent: 'flex-start',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
         alignItems: 'center',
+        paddingHorizontal: 20,
     },
     title: {
-        fontSize: 28,
+        fontSize: 20,
         fontWeight: 'bold',
         color: Colors.white,
         textAlign: 'center',
-        marginBottom: 10,
     },
     subtitle: {
-        fontSize: 16,
-        color: Colors.gray,
+        fontSize: 14,
+        color: Colors.lightGray,
         textAlign: 'center',
         lineHeight: 24,
-        marginBottom: 20,
     },
     nativeAdsContainer: {
         width: '100%',
-        marginBottom: 20,
+        paddingBottom: 5,
         paddingHorizontal: 10,
+        backgroundColor: Colors.background,
     },
     ratingContainer: {
         flexDirection: 'row',
@@ -217,17 +218,18 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        paddingVertical: 20,
+        // paddingVertical: 20,
     },
     dot: {
         width: 10,
-        height: 10,
+        height: 6,
         borderRadius: 5,
         marginHorizontal: 5,
     },
     footer: {
         paddingHorizontal: 40,
-        paddingBottom: 10,
+        // paddingBottom: 10,
+        backgroundColor: Colors.background,
     },
     nextButton: {
         width: '100%',
