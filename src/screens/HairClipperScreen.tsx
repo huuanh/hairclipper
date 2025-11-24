@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,23 +14,109 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import { CustomButton } from '../components';
+import { CustomButton, NeedVipModal, IAPModal } from '../components';
 import { Colors, GradientStyles } from '../constants/colors';
 import { HAIR_CLIPPERS } from '../constants/data';
 import { SCREEN_NAMES } from '../constants';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
+import VIPManager from '../utils/VIPManager';
+import AdManager from '../utils/AdManager';
 
 const HairClipperScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
+  const [isVip, setIsVip] = useState(false);
+  const [showNeedVipModal, setShowNeedVipModal] = useState(false);
+  const [showIAPModal, setShowIAPModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<typeof HAIR_CLIPPERS[0] | null>(null);
+
+  useEffect(() => {
+    // Check VIP status when screen loads
+    const checkVipStatus = async () => {
+      try {
+        const vipManager = VIPManager.getInstance();
+        const vipStatus = await vipManager.getVipStatusWithRefresh();
+        setIsVip(vipStatus);
+        
+        // Add callback for VIP status changes
+        const onVipStatusChange = (newVipStatus: boolean) => {
+          setIsVip(newVipStatus);
+        };
+        vipManager.addVipStatusCallback(onVipStatusChange);
+        
+        // Cleanup callback on unmount
+        return () => {
+          vipManager.removeVipStatusCallback(onVipStatusChange);
+        };
+      } catch (error) {
+        console.error('❌ Error checking VIP status:', error);
+      }
+    };
+    
+    checkVipStatus();
+  }, []);
 
   const handleClipperPress = (clipper: typeof HAIR_CLIPPERS[0]) => {
+    // Check if item needs VIP and user is not VIP
+    if (clipper.needVip && !isVip) {
+      setSelectedItem(clipper);
+      setShowNeedVipModal(true);
+      return;
+    }
+    
+    // Navigate to detail if no VIP required or user is VIP
     navigation.navigate(SCREEN_NAMES.HAIR_CLIPPER_DETAIL, { clipper });
   };
 
   const handleBackPress = () => {
     navigation.goBack();
+  };
+
+  const handleWatchAds = async () => {
+    // Show rewarded ad first
+    try {
+      console.log('🎥 Showing rewarded ad for Hair Clipper access...');
+      const reward = await AdManager.showRewardedAd();
+      
+      if (reward) {
+        console.log('✅ User watched rewarded ad successfully:', reward);
+        // Close modal and navigate to detail on successful ad watch
+        setShowNeedVipModal(false);
+        if (selectedItem) {
+          navigation.navigate(SCREEN_NAMES.HAIR_CLIPPER_DETAIL, { clipper: selectedItem });
+        }
+      } else {
+        console.log('❌ User did not complete rewarded ad');
+        // Optionally show a message or keep modal open
+      }
+    } catch (error) {
+      console.error('❌ Error showing rewarded ad:', error);
+      // Fallback: still allow access on error
+      setShowNeedVipModal(false);
+      if (selectedItem) {
+        navigation.navigate(SCREEN_NAMES.HAIR_CLIPPER_DETAIL, { clipper: selectedItem });
+      }
+    }
+  };
+
+  const handleGoPremium = () => {
+    setShowNeedVipModal(false);
+    setShowIAPModal(true);
+  };
+
+  const handleCloseNeedVipModal = () => {
+    setShowNeedVipModal(false);
+    setSelectedItem(null);
+  };
+
+  const handleCloseIAPModal = () => {
+    setShowIAPModal(false);
+  };
+
+  const handlePurchaseComplete = () => {
+    setShowIAPModal(false);
+    // VIP status will be updated automatically via callback
   };
 
   const getClipperImage = (id: number) => {
@@ -67,9 +153,11 @@ const HairClipperScreen: React.FC = () => {
             />
           </View>
           <Text style={styles.clipperName}>{item.name}</Text>
-          <View style={styles.vipBadge}>
-            <Image source={require('../../assets/icon/vip.png')} style={styles.crownIcon} resizeMode="contain" />
-          </View>
+          {item.needVip && (
+            <View style={styles.vipBadge}>
+              <Image source={require('../../assets/icon/vip.png')} style={styles.crownIcon} resizeMode="contain" />
+            </View>
+          )}
         </View>
       </ImageBackground>
     </TouchableOpacity>
@@ -109,6 +197,22 @@ const HairClipperScreen: React.FC = () => {
           <NativeAdComponent />
         </View>
       </View>
+
+      {/* Need VIP Modal */}
+      <NeedVipModal
+        visible={showNeedVipModal}
+        onClose={handleCloseNeedVipModal}
+        onWatchAds={handleWatchAds}
+        onGoPremium={handleGoPremium}
+        itemType="Hair Clipper"
+      />
+
+      {/* IAP Modal */}
+      <IAPModal
+        visible={showIAPModal}
+        onClose={handleCloseIAPModal}
+        onPurchase={handlePurchaseComplete}
+      />
     </LinearGradient>
   );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,9 +14,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 
-import { CustomButton } from '../components';
+import { CustomButton, NeedVipModal, IAPModal } from '../components';
 import { useSoundPlayer } from '../components/SoundPlayer';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
+import VIPManager from '../utils/VIPManager';
+import AdManager from '../utils/AdManager';
 import { Colors, GradientStyles } from '../constants/colors';
 import { FUNNY_SOUNDS } from '../constants/data';
 import { SCREEN_NAMES } from '../constants';
@@ -41,9 +43,85 @@ const getSoundImage = (id: number) => {
 const FunnySoundScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
+  const [isVip, setIsVip] = useState(false);
+  const [showNeedVipModal, setShowNeedVipModal] = useState(false);
+  const [showIAPModal, setShowIAPModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<typeof FUNNY_SOUNDS[0] | null>(null);
+
+  useEffect(() => {
+    // Check VIP status when screen loads
+    const checkVipStatus = async () => {
+      try {
+        const vipManager = VIPManager.getInstance();
+        const vipStatus = await vipManager.getVipStatusWithRefresh();
+        setIsVip(vipStatus);
+        
+        // Add callback for VIP status changes
+        const onVipStatusChange = (newVipStatus: boolean) => {
+          setIsVip(newVipStatus);
+        };
+        vipManager.addVipStatusCallback(onVipStatusChange);
+        
+        // Cleanup callback on unmount
+        return () => {
+          vipManager.removeVipStatusCallback(onVipStatusChange);
+        };
+      } catch (error) {
+        console.error('❌ Error checking VIP status:', error);
+      }
+    };
+    
+    checkVipStatus();
+  }, []);
 
   const handleBackPress = () => {
     navigation.goBack();
+  };
+
+  const handleWatchAds = async () => {
+    // Show rewarded ad first
+    try {
+      console.log('🎥 Showing rewarded ad for Funny Sound access...');
+      const reward = await AdManager.showRewardedAd();
+      
+      if (reward) {
+        console.log('✅ User watched rewarded ad successfully:', reward);
+        // Close modal and navigate to detail on successful ad watch
+        setShowNeedVipModal(false);
+        if (selectedItem) {
+          navigation.navigate(SCREEN_NAMES.FUNNY_SOUND_DETAIL, { sound: selectedItem });
+        }
+      } else {
+        console.log('❌ User did not complete rewarded ad');
+        // Optionally show a message or keep modal open
+      }
+    } catch (error) {
+      console.error('❌ Error showing rewarded ad:', error);
+      // Fallback: still allow access on error
+      setShowNeedVipModal(false);
+      if (selectedItem) {
+        navigation.navigate(SCREEN_NAMES.FUNNY_SOUND_DETAIL, { sound: selectedItem });
+      }
+    }
+  };
+
+  const handleGoPremium = () => {
+    setShowNeedVipModal(false);
+    setShowIAPModal(true);
+  };
+
+  const handleCloseNeedVipModal = () => {
+    setShowNeedVipModal(false);
+    setSelectedItem(null);
+  };
+
+  const handleCloseIAPModal = () => {
+    setShowIAPModal(false);
+  };
+
+  const handlePurchaseComplete = () => {
+    setShowIAPModal(false);
+    // VIP status will be updated automatically via callback
   };
 
   const SoundItem: React.FC<{ item: typeof FUNNY_SOUNDS[0] }> = ({ item }) => {
@@ -54,10 +132,16 @@ const FunnySoundScreen: React.FC = () => {
     });
 
     const handleSoundPress = () => {
+      // Check if item needs VIP and user is not VIP
+      if (item.needVip && !isVip) {
+        setSelectedItem(item);
+        setShowNeedVipModal(true);
+        return;
+      }
+      
+      // Navigate to detail if no VIP required or user is VIP
       navigation.navigate(SCREEN_NAMES.FUNNY_SOUND_DETAIL, { sound: item });
     };
-
-    const isVip = item.id > 2; // Items 3+ are VIP
 
     return (
       <TouchableOpacity
@@ -69,7 +153,7 @@ const FunnySoundScreen: React.FC = () => {
           style={styles.soundBackground}
           resizeMode="cover">
           <View style={styles.soundContent}>
-            {isVip && (
+            {item.needVip && (
               <View style={styles.vipBadge}>
                 <Image
                   source={require('../../assets/icon/vip.png')}
@@ -134,6 +218,22 @@ const FunnySoundScreen: React.FC = () => {
           <NativeAdComponent />
         </View>
       </View>
+
+      {/* Need VIP Modal */}
+      <NeedVipModal
+        visible={showNeedVipModal}
+        onClose={handleCloseNeedVipModal}
+        onWatchAds={handleWatchAds}
+        onGoPremium={handleGoPremium}
+        itemType="Sound type"
+      />
+
+      {/* IAP Modal */}
+      <IAPModal
+        visible={showIAPModal}
+        onClose={handleCloseIAPModal}
+        onPurchase={handlePurchaseComplete}
+      />
     </LinearGradient>
   );
 };
