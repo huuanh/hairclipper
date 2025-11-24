@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { Colors, GradientStyles } from '../constants/colors';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { IAPModal } from '../components';
+import VIPManager from '../utils/VIPManager';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -35,6 +36,33 @@ const SettingsScreen: React.FC = () => {
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [selectedRating, setSelectedRating] = useState(5);
   const [showIAPModal, setShowIAPModal] = useState(false);
+  const [isVip, setIsVip] = useState(false);
+
+  useEffect(() => {
+    // Check VIP status when screen loads
+    const checkVipStatus = async () => {
+      try {
+        const vipManager = VIPManager.getInstance();
+        const vipStatus = await vipManager.getVipStatusWithRefresh();
+        setIsVip(vipStatus);
+        
+        // Add callback for VIP status changes
+        const onVipStatusChange = (newVipStatus: boolean) => {
+          setIsVip(newVipStatus);
+        };
+        vipManager.addVipStatusCallback(onVipStatusChange);
+        
+        // Cleanup callback on unmount
+        return () => {
+          vipManager.removeVipStatusCallback(onVipStatusChange);
+        };
+      } catch (error) {
+        console.error('❌ Error checking VIP status:', error);
+      }
+    };
+    
+    checkVipStatus();
+  }, []);
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -50,11 +78,27 @@ const SettingsScreen: React.FC = () => {
     setShowIAPModal(false);
   };
 
-  const handlePurchase = () => {
-    // Handle IAP purchase
-    console.log('Purchase initiated');
-    // TODO: Integrate with IAP library
-    setShowIAPModal(false);
+  const handlePurchase = async () => {
+    // Handle IAP purchase completion
+    console.log('✅ Purchase completed successfully!');
+    
+    try {
+      // Refresh VIP status
+      const vipManager = VIPManager.getInstance();
+      await vipManager.refreshVipStatus();
+      
+      // Show success message
+      Alert.alert(
+        'Purchase Successful',
+        'Thank you for upgrading to premium! You now have access to all premium features.',
+        [{ text: 'OK' }]
+      );
+      
+      // Close modal
+      setShowIAPModal(false);
+    } catch (error) {
+      console.error('❌ Error handling purchase completion:', error);
+    }
   };
 
   const handleLanguage = () => {
@@ -211,18 +255,28 @@ const SettingsScreen: React.FC = () => {
             style={styles.premiumCard}
             onPress={handlePremiumUpgrade}
             activeOpacity={0.8}
+            disabled={isVip}
           >
             <LinearGradient
-              colors={['#E879F9', '#A855F7', '#8B5CF6']}
+              colors={
+                isVip 
+                  ? ['#4CAF50', '#45A049', '#388E3C'] // Green gradient for VIP
+                  : ['#E879F9', '#A855F7', '#8B5CF6'] // Purple gradient for non-VIP
+              }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.premiumGradient}
             >
               <View style={styles.premiumContent}>
                 <View style={styles.premiumLeft}>
-                  <Text style={styles.premiumTitle}>Premium{'\n'}Upgrade</Text>
+                  <Text style={styles.premiumTitle}>
+                    {isVip ? 'Premium\nActive' : 'Premium\nUpgrade'}
+                  </Text>
                   <Text style={styles.premiumSubtitle}>
-                    Enjoy Premium Package{'\n'}with exclusive features.
+                    {isVip 
+                      ? 'You have access to all\npremium features!' 
+                      : 'Enjoy Premium Package\nwith exclusive features.'
+                    }
                   </Text>
                 </View>
                 <View style={styles.premiumRight}>
@@ -230,6 +284,11 @@ const SettingsScreen: React.FC = () => {
                     source={require('../../assets/setting/ic_vip.png')}
                     style={styles.premiumIcon}
                   />
+                  {isVip && (
+                    <View style={styles.vipBadge}>
+                      <Text style={styles.vipBadgeText}>✓</Text>
+                    </View>
+                  )}
                 </View>
               </View>
             </LinearGradient>
@@ -382,10 +441,29 @@ const styles = StyleSheet.create({
   },
   premiumRight: {
     marginLeft: 20,
+    position: 'relative',
   },
   premiumIcon: {
     width: 60,
     height: 60,
+  },
+  vipBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#4CAF50',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: Colors.white,
+  },
+  vipBadgeText: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   settingsList: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',

@@ -18,8 +18,8 @@ import {
 export const IAP_PRODUCTS = {
   // One-time purchases
   IAP_LIFETIME: Platform.select({
-    android: 'boom.hairclipper.funnyprank.haircut.sound.lifetime',
-    ios: 'boom.hairclipper.funnyprank.haircut.sound.lifetime',
+    android: 'boom.hairclipper.funnyprank.haircut.sound.pre',
+    ios: 'boom.hairclipper.funnyprank.haircut.sound.pre',
   }),
 
   // Subscriptions

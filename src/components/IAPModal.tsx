@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,13 @@ import {
   Dimensions,
   Modal,
   StatusBar,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors } from '../constants/colors';
+import IAPManager, { IAP_PRODUCTS } from '../utils/IAPManager';
+import type { Product, Purchase } from 'react-native-iap';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -25,6 +29,207 @@ const IAPModal: React.FC<IAPModalProps> = ({
   onClose,
   onPurchase,
 }) => {
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Initialize IAP and load product data
+  useEffect(() => {
+    if (visible) {
+      loadProductData();
+    }
+    
+    // Cleanup function
+    return () => {
+      if (visible) {
+        const iapManager = IAPManager.getInstance();
+        // Remove any lingering callbacks when component unmounts
+        iapManager.removePurchaseSuccessCallback(() => {});
+        iapManager.removePurchaseErrorCallback(() => {});
+      }
+    };
+  }, [visible]);
+
+  const loadProductData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Get IAP Manager instance
+      const iapManager = IAPManager.getInstance();
+      
+      // Initialize if not already done
+      if (!iapManager.isReady()) {
+        const initialized = await iapManager.initialize();
+        if (!initialized) {
+          throw new Error('Failed to initialize IAP');
+        }
+      }
+
+      // Wait a bit for products to load
+      await new Promise<void>(resolve => setTimeout(resolve, 1000));
+      
+      // Get the lifetime product
+      const products = iapManager.getInApp();
+      console.log('🔍 Searching for product ID:', IAP_PRODUCTS.IAP_LIFETIME);
+      console.log('🔍 Available products:', products);
+      
+      const lifetimeProduct = products.find(p => {
+        const productId = (p as any).productId || (p as any).productIds || (p as any).sku || (p as any).id;
+        console.log('🔍 Checking product ID:', productId);
+        return productId === IAP_PRODUCTS.IAP_LIFETIME;
+      });
+      
+      if (lifetimeProduct) {
+        setProduct(lifetimeProduct);
+        console.log('✅ Product loaded:', lifetimeProduct);
+      } else {
+        console.log('⚠️ Product not found in store');
+        // Also try to check subscriptions in case it's misconfigured
+        const subscriptions = iapManager.getSubscriptions();
+        console.log('🔍 Checking subscriptions as fallback:', subscriptions);
+        const subProduct = subscriptions.find(s => {
+          const productId = (s as any).productId || (s as any).productIds || (s as any).sku;
+          return productId === IAP_PRODUCTS.IAP_LIFETIME;
+        });
+        
+        if (subProduct) {
+          setProduct(subProduct as any);
+          console.log('✅ Product found in subscriptions:', subProduct);
+        } else {
+          console.log('❌ Product not found anywhere');
+          setError('Product not available in your region');
+        }
+        
+        // Log all available products for debugging
+        console.log('Available products:', products);
+        console.log('Available subscriptions:', subscriptions);
+        iapManager.logAllItems();
+      }
+    } catch (error) {
+      console.error('❌ Error loading product data:', error);
+      setError('Failed to load product information');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePurchase = useCallback(async () => {
+    if (!product || purchasing) return;
+    
+    try {
+      setPurchasing(true);
+      setError(null);
+      
+      const iapManager = IAPManager.getInstance();
+      
+      // Add success callback
+      const onPurchaseSuccess = (purchase: Purchase) => {
+        console.log('✅ Purchase successful:', purchase);
+        setPurchasing(false);
+        onPurchase(); // Call parent callback
+        onClose(); // Close modal
+        // Remove callback to prevent memory leaks
+        iapManager.removePurchaseSuccessCallback(onPurchaseSuccess);
+      };
+      
+      // Add error callback
+      const onPurchaseError = (error: any) => {
+        console.error('❌ Purchase error:', error);
+        setPurchasing(false);
+        
+        let errorMessage = 'Purchase failed';
+        if (error.code === 'USER_CANCELED' || error.responseCode === 1) {
+          errorMessage = 'Purchase was cancelled';
+        } else if (error.code === 'ITEM_ALREADY_OWNED' || error.responseCode === 7) {
+          errorMessage = 'You already own this item';
+        } else if (error.code === 'ITEM_UNAVAILABLE' || error.responseCode === 4) {
+          errorMessage = 'Item is not available for purchase';
+        }
+        
+        setError(errorMessage);
+        
+        // Show alert for user feedback
+        Alert.alert('Purchase Error', errorMessage);
+        
+        // Remove callback to prevent memory leaks
+        iapManager.removePurchaseErrorCallback(onPurchaseError);
+      };
+      
+      // Register callbacks
+      iapManager.addPurchaseSuccessCallback(onPurchaseSuccess);
+      iapManager.addPurchaseErrorCallback(onPurchaseError);
+      
+      // Request purchase
+      const productId = (product as any).productId || 
+                       (product as any).productIds || 
+                       (product as any).sku ||
+                       IAP_PRODUCTS.IAP_LIFETIME; // fallback to the configured ID
+      
+      console.log('🛒 Requesting purchase for product ID:', productId);
+      await iapManager.requestPurchase(productId);
+      
+    } catch (error) {
+      console.error('❌ Purchase request failed:', error);
+      setPurchasing(false);
+      setError('Failed to initiate purchase');
+      Alert.alert('Error', 'Failed to start purchase process');
+    }
+  }, [product, purchasing, onPurchase, onClose]);
+
+  // Format price for display
+  const getDisplayPrice = (): string => {
+    if (product) {
+      // Try different price properties
+      const price = (product as any).price || 
+                   (product as any).localizedPrice || 
+                   (product as any).priceAmountMicros;
+
+      if(product.displayPrice) {
+        return product.displayPrice;
+      }
+      
+      if (price) {
+        // If it's already a formatted string (like "$4.99"), return it
+        if (typeof price === 'string') {
+          return price;
+        }
+        // If it's a number in micros (Google Play format), convert it
+        if (typeof price === 'number' && price > 1000) {
+          const actualPrice = price;
+          const currency = getCurrency();
+          return `${actualPrice.toFixed(2)} ${currency}`;
+        }
+        // If it's a regular number
+        if (typeof price === 'number') {
+          const currency = getCurrency();
+          return `${price.toFixed(2)} ${currency}`;
+        }
+      }
+    }
+    return '$4.99'; // Fallback price
+  };
+
+  // Get currency symbol
+  const getCurrency = (): string => {
+    if (product) {
+      const currency = (product as any).currency || 
+                      (product as any).priceCurrencyCode;
+      if (currency) {
+        // Convert currency code to symbol
+        switch (currency) {
+          case 'USD': return '$';
+          case 'EUR': return '€';
+          case 'GBP': return '£';
+          case 'JPY': return '¥';
+          case 'VND': return '₫';
+          default: return currency;
+        }
+      }
+    }
+    return '$';
+  };
   return (
     <Modal
       visible={visible}
@@ -79,24 +284,62 @@ const IAPModal: React.FC<IAPModalProps> = ({
             </View>
           </View>
           
-          {/* Price */}
-          <View style={styles.priceContainer}>
-            <Text style={styles.priceText}>4.99$</Text>
-            <Text style={styles.priceSubText}>One-time purchase</Text>
-          </View>
+          {/* Loading state */}
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator color={Colors.white} size="large" />
+              <Text style={styles.loadingText}>Loading product information...</Text>
+            </View>
+          )}
+          
+          {/* Error state */}
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity 
+                style={styles.retryButton} 
+                onPress={loadProductData}
+              >
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          
+          {/* Price - Show only when product is loaded and no error */}
+          {!loading && !error && (
+            <View style={styles.priceContainer}>
+              <Text style={styles.priceText}>{getDisplayPrice()}</Text>
+              <Text style={styles.priceSubText}>One-time purchase</Text>
+            </View>
+          )}
           
           {/* Buy button */}
           <TouchableOpacity
-            style={styles.buyButton}
-            onPress={onPurchase}
+            style={[
+              styles.buyButton,
+              (loading || purchasing || error) && styles.buyButtonDisabled
+            ]}
+            onPress={handlePurchase}
+            disabled={loading || purchasing || !!error || !product}
           >
             <LinearGradient
-              colors={['#E879F9', '#A855F7']}
+              colors={
+                loading || purchasing || error 
+                  ? ['#666666', '#444444'] 
+                  : ['#E879F9', '#A855F7']
+              }
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.buyButtonGradient}
             >
-              <Text style={styles.buyButtonText}>BUY NOW</Text>
+              {purchasing ? (
+                <View style={styles.purchasingContainer}>
+                  <ActivityIndicator color={Colors.white} size="small" />
+                  <Text style={[styles.buyButtonText, { marginLeft: 10 }]}>PROCESSING...</Text>
+                </View>
+              ) : (
+                <Text style={styles.buyButtonText}>BUY NOW</Text>
+              )}
             </LinearGradient>
           </TouchableOpacity>
           
@@ -244,6 +487,52 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#A855F7',
     textDecorationLine: 'underline',
+  },
+  // New styles for IAP functionality
+  loadingContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+    paddingVertical: 20,
+  },
+  loadingText: {
+    color: Colors.white,
+    fontSize: 14,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+    paddingVertical: 20,
+    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 0, 0, 0.3)',
+  },
+  errorText: {
+    color: '#ff6b6b',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  retryButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    backgroundColor: '#A855F7',
+    borderRadius: 20,
+  },
+  retryButtonText: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  buyButtonDisabled: {
+    opacity: 0.6,
+  },
+  purchasingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

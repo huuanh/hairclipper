@@ -13,6 +13,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import { Colors, GradientStyles } from '../constants/colors';
 import AdManager from '../utils/AdManager';
 import RemoteConfigManager from '../utils/RemoteConfigManager';
+import IAPManager from '../utils/IAPManager';
+import VIPManager from '../utils/VIPManager';
 import { SCREEN_NAMES, ASYNC_STORAGE_KEYS } from '../constants';
 
 const LoadingScreen: React.FC = () => {
@@ -23,15 +25,36 @@ const LoadingScreen: React.FC = () => {
     // Initialize services
     const initializeServices = async () => {
       try {
+        console.log('🚀 Initializing all services...');
+        
         // Initialize AdMob
         await AdManager.initialize();
-        console.log('AdMob initialized successfully');
+        console.log('✅ AdMob initialized successfully');
         
         // Initialize Firebase Remote Config
         await RemoteConfigManager.initialize();
-        console.log('Remote Config initialized successfully');
+        console.log('✅ Remote Config initialized successfully');
+        
+        // Initialize IAP Manager
+        const iapManager = IAPManager.getInstance();
+        const iapSuccess = await iapManager.initialize();
+        
+        if (iapSuccess) {
+          console.log('✅ IAP Manager initialized successfully');
+          // Load user's purchase history
+          await iapManager.refreshEntitlements();
+        } else {
+          console.log('❌ IAP Manager initialization failed');
+        }
+
+        // Initialize VIP Manager
+        const vipManager = VIPManager.getInstance();
+        await vipManager.initialize();
+        console.log('✅ VIP Manager initialized successfully');
+        
+        console.log('✅ All services initialized successfully');
       } catch (error) {
-        console.error('Failed to initialize services:', error);
+        console.error('❌ Failed to initialize services:', error);
       }
     };
 

@@ -12,6 +12,7 @@ import 'react-native-gesture-handler';
 import RootNavigator from './src/navigation/RootNavigator';
 
 function App() {
+
   return (
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" backgroundColor="#1A1A2E" />
