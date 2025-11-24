@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,35 +19,36 @@ import { Colors, GradientStyles } from '../constants/colors';
 import { SCREEN_NAMES } from '../constants';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { IAPModal } from '../components';
+import { useTranslation } from '../hooks/useTranslation';
 
 const { width } = Dimensions.get('window');
 
 const MENU_ITEMS = [
   {
     id: 1,
-    title: 'Hair Clipper',
-    subtitle: 'Buzz their hair now!',
+    titleKey: 'home.hair_clipper.title',
+    subtitleKey: 'home.hair_clipper.subtitle',
     image: require('../../assets/home/hairclipper.png'),
     screen: SCREEN_NAMES.HAIR_CLIPPER,
   },
   {
     id: 2,
-    title: 'DIY Makeup',
-    subtitle: 'Give them a glow-up prank!',
+    titleKey: 'home.diy_makeup.title',
+    subtitleKey: 'home.diy_makeup.subtitle',
     image: require('../../assets/home/diymakeup.png'),
     screen: SCREEN_NAMES.DIY_MAKEUP,
   },
   {
     id: 3,
-    title: 'Funny Sounds',
-    subtitle: 'Hit them with a hilarious sound!',
+    titleKey: 'home.funny_sounds.title',
+    subtitleKey: 'home.funny_sounds.subtitle',
     image: require('../../assets/home/funnysound.png'),
     screen: SCREEN_NAMES.FUNNY_SOUND,
   },
   {
     id: 4,
-    title: 'Hair Dryer',
-    subtitle: 'Blast them with a fake dryer!',
+    titleKey: 'home.hair_dryer.title',
+    subtitleKey: 'home.hair_dryer.subtitle',
     image: require('../../assets/home/hairdryer.png'),
     screen: SCREEN_NAMES.HAIR_DRYER,
   },
@@ -57,6 +58,9 @@ const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [showIAPModal, setShowIAPModal] = useState(false);
+  
+  // Use translation hook
+  const { t } = useTranslation();
 
   const handleMenuPress = (screen: string) => {
     navigation.navigate(screen as never);
@@ -90,7 +94,7 @@ const HomeScreen: React.FC = () => {
         <View style={styles.headerContainer}>
           <View style={styles.headerRow}>
             <View>
-              <Text style={styles.title}>HAIR CLIPPER PRANK</Text>
+              <Text style={styles.title}>{t('home.title', 'HAIR CLIPPER PRANK')}</Text>
             </View>
             <View style={styles.headerIcons}>
               <TouchableOpacity style={styles.iconButton} onPress={handleVIPPress}>
@@ -120,11 +124,11 @@ const HomeScreen: React.FC = () => {
                   resizeMode="cover">
                   <View style={styles.cardContent}>
                     <View style={styles.cardText}>
-                      <Text style={styles.cardTitle}>{item.title}</Text>
-                      <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+                      <Text style={styles.cardTitle}>{t(item.titleKey, item.titleKey)}</Text>
+                      <Text style={styles.cardSubtitle}>{t(item.subtitleKey, item.subtitleKey)}</Text>
                       <View style={styles.playButtonContainer}>
                         <TouchableOpacity style={styles.playButton} onPress={() => handleMenuPress(item.screen)}>
-                          <Text style={styles.playButtonText}>Play now</Text>
+                          <Text style={styles.playButtonText}>{t('home.play_now', 'Play now')}</Text>
                         </TouchableOpacity>
                       </View>
                     </View>

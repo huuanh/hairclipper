@@ -29,6 +29,7 @@ import { Colors, GradientStyles } from '../constants/colors';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { SCREEN_NAMES } from '../constants';
 import { HAIR_CLIPPERS } from '../constants/data';
+import { useTranslation } from '../hooks/useTranslation';
 
 const getClipperImage = (id: number) => {
   switch (id) {
@@ -66,6 +67,9 @@ const HairClipperDetailScreen: React.FC = () => {
   const [showIAPModal, setShowIAPModal] = useState(false);
   const [isVip, setIsVip] = useState(false);
   const [pendingSelectedClipper, setPendingSelectedClipper] = useState<any>(null);
+
+  // Use translation hook
+  const { t } = useTranslation();
 
   // Sound player với flash integration  
   const { playSound, stopSound, isFlashing: soundFlashing } = useSoundPlayer({
@@ -327,12 +331,12 @@ const HairClipperDetailScreen: React.FC = () => {
         {!isZoomedIn && (
           <View style={styles.controlsSection}>
             <View style={styles.playAfterContainer}>
-              <Text style={styles.controlLabel}>Play after</Text>
+              <Text style={styles.controlLabel}>{t('control.play_after', 'Play after')}</Text>
               <TouchableOpacity
                 style={styles.playAfterSelector}
                 onPress={handlePlayAfterSelect}>
                 <Text style={styles.playAfterSelectorText}>
-                  {countdown > 0 ? `${countdown}s` : (playAfter === 0 ? 'Off' : `${playAfter}s`)}
+                  {countdown > 0 ? `${countdown}s` : (playAfter === 0 ? t('modal.off', 'Off') : `${playAfter}s`)}
                 </Text>
                 <Text style={styles.dropdownArrow}>▼</Text>
               </TouchableOpacity>
@@ -342,7 +346,7 @@ const HairClipperDetailScreen: React.FC = () => {
               onPress={handleLoopToggle}>
               <View style={styles.loopContent}>
                 <Text style={[styles.loopText, loopEnabled && styles.loopTextActive]}>
-                  Loop
+                  {t('control.loop', 'Loop')}
                 </Text>
                 <Image
                   source={loopEnabled ? require('../../assets/icon/loop_on.png') : require('../../assets/icon/loop_off.png')}
@@ -470,13 +474,13 @@ const HairClipperDetailScreen: React.FC = () => {
         onRequestClose={() => setShowTimeModal(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Play After Time</Text>
+            <Text style={styles.modalTitle}>{t('modal.select_play_after_time', 'Select Play After Time')}</Text>
 
             {[
-              { label: 'Off', value: 0 },
-              { label: '3 seconds', value: 3 },
-              { label: '5 seconds', value: 5 },
-              { label: '10 seconds', value: 10 },
+              { label: t('modal.off', 'Off'), value: 0 },
+              { label: `3 ${t('modal.seconds', 'seconds')}`, value: 3 },
+              { label: `5 ${t('modal.seconds', 'seconds')}`, value: 5 },
+              { label: `10 ${t('modal.seconds', 'seconds')}`, value: 10 },
             ].map((option) => (
               <TouchableOpacity
                 key={option.value}
@@ -499,7 +503,7 @@ const HairClipperDetailScreen: React.FC = () => {
               onPress={() => {
                 setShowTimeModal(false);
               }}>
-              <Text style={styles.modalCloseText}>Cancel</Text>
+              <Text style={styles.modalCloseText}>{t('modal.cancel', 'Cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>

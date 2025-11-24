@@ -22,6 +22,7 @@ import { RootStackParamList } from '../navigation/RootNavigator';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import VIPManager from '../utils/VIPManager';
 import AdManager from '../utils/AdManager';
+import { useTranslation } from '../hooks/useTranslation';
 
 const HairDryerScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -30,7 +31,10 @@ const HairDryerScreen: React.FC = () => {
   const [showNeedVipModal, setShowNeedVipModal] = useState(false);
   const [showIAPModal, setShowIAPModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<typeof HAIR_DRYERS[0] | null>(null);
-
+  
+  // Use translation hook
+  const { t } = useTranslation();
+  
   useEffect(() => {
     // Check VIP status when screen loads
     const checkVipStatus = async () => {
@@ -175,7 +179,7 @@ const HairDryerScreen: React.FC = () => {
           <TouchableOpacity style={styles.headerButton} onPress={handleBackPress}>
             <Image source={require('../../assets/icon/back.png')} style={styles.headerIcon} resizeMode="contain" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Hair Dryer</Text>
+          <Text style={styles.headerTitle}>{t('header.hair_dryer', 'Hair Dryer')}</Text>
           <TouchableOpacity style={styles.headerButton} onPress={() => {}}>
             <Image source={require('../../assets/icon/setting.png')} style={styles.headerIcon} resizeMode="contain" />
           </TouchableOpacity>

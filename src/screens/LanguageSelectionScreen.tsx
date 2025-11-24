@@ -8,15 +8,16 @@ import {
     ScrollView,
     StatusBar,
     Dimensions,
+    Alert,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 
 import { Colors, GradientStyles } from '../constants/colors';
-import { SCREEN_NAMES, ASYNC_STORAGE_KEYS } from '../constants';
+import { SCREEN_NAMES } from '../constants';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { ADS_UNIT } from '../utils/AdManager';
+import LanguageManager, { SUPPORTED_LANGUAGES } from '../utils/LanguageManager';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,103 +26,31 @@ type LanguageSelectionRouteProp = RouteProp<
     'LanguageSelection'
 >;
 
-interface Language {
-    code: string;
-    name: string;
-    flag: any;
-}
-
-const LANGUAGES: Language[] = [
-    {
-        code: 'en',
-        name: 'English',
-        flag: require('../../assets/lang/english_us.png'),
-    },
-    {
-        code: 'pt',
-        name: 'Português',
-        flag: require('../../assets/lang/portugal.png'),
-    },
-    {
-        code: 'es',
-        name: 'Español',
-        flag: require('../../assets/lang/spain.png'),
-    },
-    {
-        code: 'ru',
-        name: 'Русский',
-        flag: require('../../assets/lang/russia.png'),
-    },
-    {
-        code: 'fr',
-        name: 'Français',
-        flag: require('../../assets/lang/france.png'),
-    },
-    {
-        code: 'tr',
-        name: 'Türkçe',
-        flag: require('../../assets/lang/turkey.png'),
-    },
-    {
-        code: 'id',
-        name: 'Indonesia',
-        flag: require('../../assets/lang/indonesia.png'),
-    },
-    {
-        code: 'de',
-        name: 'Deutsch',
-        flag: require('../../assets/lang/gerrmany.png'),
-    },
-    {
-        code: 'nl',
-        name: 'Nederlands',
-        flag: require('../../assets/lang/holland_netherland.png'),
-    },
-    {
-        code: 'ko',
-        name: '한국어',
-        flag: require('../../assets/lang/south_korea.png'),
-    },
-    {
-        code: 'th',
-        name: 'ไทย',
-        flag: require('../../assets/lang/thailand.png'),
-    },
-    {
-        code: 'vi',
-        name: 'Tiếng Việt',
-        flag: require('../../assets/lang/vietnamese.png'),
-    },
-];
-
 const LanguageSelectionScreen: React.FC = () => {
     const navigation = useNavigation();
     const route = useRoute<LanguageSelectionRouteProp>();
     const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+    const [languageManager] = useState(() => LanguageManager.getInstance());
+    const [supportedLanguages, setSupportedLanguages] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Check if we came from Settings screen
     const isFromSettings = route.params?.fromSettings;
 
-    // Load selected language from AsyncStorage
+    // Load supported languages and current language
     useEffect(() => {
-        const loadSelectedLanguage = async () => {
-            try {
-                const savedLanguage = await AsyncStorage.getItem(ASYNC_STORAGE_KEYS.SELECTED_LANGUAGE);
-                if (savedLanguage) {
-                    setSelectedLanguage(savedLanguage);
-                } else {
-                    // Default to English if no language saved
-                    setSelectedLanguage('en');
-                }
-            } catch (error) {
-                console.error('Error loading selected language:', error);
-                // Default to English if error
-                setSelectedLanguage('en');
-            }
+        const initializeLanguages = () => {
+            // Get supported languages from LanguageManager
+            const languages = languageManager.getSupportedLanguages();
+            setSupportedLanguages(languages);
+            
+            // Get current language
+            const currentLang = languageManager.getCurrentLanguage();
+            setSelectedLanguage(currentLang);
         };
 
-        loadSelectedLanguage();
-    }, []);
+        initializeLanguages();
+    }, [languageManager]);
 
     const handleLanguageSelect = (languageCode: string) => {
         setSelectedLanguage(languageCode);
@@ -133,39 +62,65 @@ const LanguageSelectionScreen: React.FC = () => {
             return;
         }
 
+        setIsLoading(true);
+        
         try {
-            // Save selected language
-            await AsyncStorage.setItem(ASYNC_STORAGE_KEYS.SELECTED_LANGUAGE, selectedLanguage);
-
-            if (isFromSettings) {
-                // If from settings, go back to settings
-                navigation.goBack();
-            } else {
-                // If first time (from loading), navigate to onboarding
-                navigation.navigate(SCREEN_NAMES.ONBOARDING as never);
+            // Use LanguageManager to set the language
+            const result = await languageManager.setLanguage(selectedLanguage);
+            
+            if (result.error) {
+                Alert.alert('Error', `Failed to set language: ${result.error}`);
+                setIsLoading(false);
+                return;
             }
+            
+            // Check if app restart is required (for RTL languages)
+            if (result.requiresRestart) {
+                Alert.alert(
+                    'Language Changed',
+                    'The app needs to restart to apply the new language settings.',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => {
+                                // Navigate based on source
+                                if (isFromSettings) {
+                                    navigation.goBack();
+                                } else {
+                                    navigation.navigate(SCREEN_NAMES.ONBOARDING as never);
+                                }
+                            }
+                        }
+                    ]
+                );
+            } else {
+                // Navigate without restart
+                if (isFromSettings) {
+                    navigation.goBack();
+                } else {
+                    navigation.navigate(SCREEN_NAMES.ONBOARDING as never);
+                }
+            }
+            
         } catch (error) {
-            console.error('Error saving language:', error);
-            // Navigate based on source
-            if (isFromSettings) {
-                navigation.goBack();
-            } else {
-                navigation.navigate(SCREEN_NAMES.ONBOARDING as never);
-            }
+            console.error('Error applying language:', error);
+            Alert.alert('Error', 'Failed to apply language changes.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const renderLanguageItem = (language: Language) => {
-        const isSelected = selectedLanguage === language.code;
+    const renderLanguageItem = (language: any) => {
+        const isSelected = selectedLanguage === language.id;
 
         return (
             <TouchableOpacity
-                key={language.code}
+                key={language.id}
                 style={[
                     styles.languageItem,
                     isSelected && styles.languageItemSelected
                 ]}
-                onPress={() => handleLanguageSelect(language.code)}
+                onPress={() => handleLanguageSelect(language.id)}
                 activeOpacity={0.8}
             >
                 <View style={styles.languageContent}>
@@ -174,7 +129,7 @@ const LanguageSelectionScreen: React.FC = () => {
                         styles.languageName,
                         isSelected && styles.languageNameSelected
                     ]}>
-                        {language.name}
+                        {language.nativeName}
                     </Text>
                 </View>
 
@@ -201,10 +156,13 @@ const LanguageSelectionScreen: React.FC = () => {
                 <Text style={styles.headerTitle}>LANGUAGE</Text>
 
                 <TouchableOpacity
-                    style={styles.nextButton}
+                    style={[styles.nextButton, isLoading && styles.nextButtonDisabled]}
                     onPress={handleApply}
+                    disabled={isLoading}
                 >
-                    <Text style={styles.nextButtonText}>Apply</Text>
+                    <Text style={styles.nextButtonText}>
+                        {isLoading ? 'Applying...' : 'Apply'}
+                    </Text>
                 </TouchableOpacity>
             </View>
 
@@ -214,7 +172,7 @@ const LanguageSelectionScreen: React.FC = () => {
                 contentContainerStyle={styles.scrollContent}
             >
                 <View style={styles.languageList}>
-                    {LANGUAGES.map(renderLanguageItem)}
+                    {supportedLanguages.map(renderLanguageItem)}
                 </View>
 
             </ScrollView>
@@ -255,6 +213,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 3,
         borderRadius: 20,
+    },
+    nextButtonDisabled: {
+        backgroundColor: Colors.gray,
+        opacity: 0.6,
     },
     nextButtonText: {
         color: Colors.white,

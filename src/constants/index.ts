@@ -27,24 +27,18 @@ export const ONBOARDING_DATA = [
     title: 'DIY Makeup',
     subtitle: 'Beard It, Wig It, Meme It!',
     image: require('../../assets/onboard/1.png'),
-    adText: 'Ưu đãi khủng cho tân thủ!',
-    adSubtext: 'game siêu gay hay mấy thằng có android',
   },
   {
     id: 2,
     title: 'Hair Clipper Prank',
     subtitle: 'Buzz It Like a Pro',
     image: require('../../assets/onboard/2.png'),
-    adText: 'Ưu đãi khủng cho tân thủ!',
-    adSubtext: 'game siêu gay hay mấy thằng có android',
   },
   {
     id: 3,
     title: 'Funny Sounds Prank',
     subtitle: 'Make Some Noise, Break the Silence!',
     image: require('../../assets/onboard/3.png'),
-    adText: 'Ưu đãi khủng cho tân thủ!',
-    adSubtext: 'game siêu gay hay mấy thằng có android',
   },
 ];
 

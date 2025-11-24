@@ -23,6 +23,7 @@ import { Colors, GradientStyles } from '../constants/colors';
 import { FUNNY_SOUNDS } from '../constants/data';
 import { SCREEN_NAMES } from '../constants';
 import type { RootStackParamList } from '../navigation/RootNavigator';
+import { useTranslation } from '../hooks/useTranslation';
 
 const getSoundImage = (id: number) => {
   switch (id) {
@@ -47,6 +48,9 @@ const FunnySoundScreen: React.FC = () => {
   const [showNeedVipModal, setShowNeedVipModal] = useState(false);
   const [showIAPModal, setShowIAPModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<typeof FUNNY_SOUNDS[0] | null>(null);
+
+  // Use translation hook
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Check VIP status when screen loads
@@ -194,7 +198,7 @@ const FunnySoundScreen: React.FC = () => {
               style={styles.headerIcon}
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Funny Sound</Text>
+          <Text style={styles.headerTitle}>{t('header.funny_sounds', 'Funny Sound')}</Text>
           <TouchableOpacity style={styles.headerButton}>
             <Image
               source={require('../../assets/icon/setting.png')}

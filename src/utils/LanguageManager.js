@@ -9,70 +9,84 @@ export const SUPPORTED_LANGUAGES = {
     code: 'en-US',
     name: 'English',
     nativeName: 'English',
-    flag: require('../../assets/setting/lang/united_states.png'),
-    isRTL: false
-  },
-  'ko': {
-    code: 'ko-KR',
-    name: '한국어',
-    nativeName: '한국어',
-    flag: require('../../assets/setting/lang/south_korea.png'),
-    isRTL: false
-  },
-  'ja': {
-    code: 'ja-JP',
-    name: '日本語',
-    nativeName: '日本語',
-    flag: require('../../assets/setting/lang/japan.png'),
-    isRTL: false
-  },
-  'es': {
-    code: 'es-ES',
-    name: 'Español',
-    nativeName: 'Español',
-    flag: require('../../assets/setting/lang/spain.png'),
+    flag: require('../../assets/lang/english_us.png'),
     isRTL: false
   },
   'pt': {
     code: 'pt-PT',
     name: 'Português',
     nativeName: 'Português',
-    flag: require('../../assets/setting/lang/portugal.png'),
+    flag: require('../../assets/lang/portugal.png'),
+    isRTL: false
+  },
+  'es': {
+    code: 'es-ES',
+    name: 'Español',
+    nativeName: 'Español',
+    flag: require('../../assets/lang/spain.png'),
+    isRTL: false
+  },
+  'ru': {
+    code: 'ru-RU',
+    name: 'Русский',
+    nativeName: 'Русский',
+    flag: require('../../assets/lang/russia.png'),
     isRTL: false
   },
   'fr': {
     code: 'fr-FR',
     name: 'Français',
     nativeName: 'Français',
-    flag: require('../../assets/setting/lang/france.png'),
+    flag: require('../../assets/lang/france.png'),
+    isRTL: false
+  },
+  'tr': {
+    code: 'tr-TR',
+    name: 'Türkçe',
+    nativeName: 'Türkçe',
+    flag: require('../../assets/lang/turkey.png'),
+    isRTL: false
+  },
+  'id': {
+    code: 'id-ID',
+    name: 'Indonesia',
+    nativeName: 'Bahasa Indonesia',
+    flag: require('../../assets/lang/indonesia.png'),
     isRTL: false
   },
   'de': {
     code: 'de-DE',
     name: 'Deutsch',
     nativeName: 'Deutsch',
-    flag: require('../../assets/setting/lang/germany.png'),
+    flag: require('../../assets/lang/gerrmany.png'),
     isRTL: false
   },
-  'hi': {
-    code: 'hi-IN',
-    name: 'हिन्दी',
-    nativeName: 'हिन्दी',
-    flag: require('../../assets/setting/lang/india.png'),
+  'nl': {
+    code: 'nl-NL',
+    name: 'Nederlands',
+    nativeName: 'Nederlands',
+    flag: require('../../assets/lang/holland_netherland.png'),
     isRTL: false
   },
-  'ar': {
-    code: 'ar-SA',
-    name: 'العربية',
-    nativeName: 'العربية',
-    flag: require('../../assets/setting/lang/saudi_arabia.png'),
-    isRTL: true
+  'ko': {
+    code: 'ko-KR',
+    name: '한국어',
+    nativeName: '한국어',
+    flag: require('../../assets/lang/south_korea.png'),
+    isRTL: false
+  },
+  'th': {
+    code: 'th-TH',
+    name: 'ไทย',
+    nativeName: 'ภาษาไทย',
+    flag: require('../../assets/lang/thailand.png'),
+    isRTL: false
   },
   'vi': {
     code: 'vi-VN',
     name: 'Tiếng Việt',
     nativeName: 'Tiếng Việt',
-    flag: require('../../assets/setting/lang/vietnam.png'),
+    flag: require('../../assets/lang/vietnamese.png'),
     isRTL: false
   }
 };
