@@ -21,6 +21,10 @@ import Sound from 'react-native-sound';
 import { CustomButton } from '../components';
 import { useSoundPlayer } from '../components/SoundPlayer';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
+import NeedVipModal from '../components/NeedVipModal';
+import IAPModal from '../components/IAPModal';
+import VIPManager from '../utils/VIPManager';
+import AdManager from '../utils/AdManager';
 import { Colors, GradientStyles } from '../constants/colors';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { SCREEN_NAMES } from '../constants';
@@ -58,6 +62,10 @@ const HairDryerDetailScreen: React.FC = () => {
   const [countdown, setCountdown] = useState(0);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
   const [showTimeModal, setShowTimeModal] = useState(false);
+  const [showNeedVipModal, setShowNeedVipModal] = useState(false);
+  const [showIAPModal, setShowIAPModal] = useState(false);
+  const [isVip, setIsVip] = useState(false);
+  const [pendingSelectedDryer, setPendingSelectedDryer] = useState<any>(null);
 
   // Sound player với flash integration  
   const { playSound, stopSound, isFlashing: soundFlashing } = useSoundPlayer({
@@ -72,6 +80,27 @@ const HairDryerDetailScreen: React.FC = () => {
   useEffect(() => {
     console.log('Flash state changed:', { flashEnabled, soundFlashing });
   }, [flashEnabled, soundFlashing]);
+
+  // Check VIP status
+  useEffect(() => {
+    const checkVipStatus = async () => {
+      const vipManager = VIPManager.getInstance();
+      const vipStatus = vipManager.getIsVip();
+      setIsVip(vipStatus);
+    };
+    checkVipStatus();
+
+    const vipManager = VIPManager.getInstance();
+    const handleVipStatusChange = (status: boolean) => {
+      setIsVip(status);
+    };
+    
+    vipManager.addVipStatusCallback(handleVipStatusChange);
+
+    return () => {
+      vipManager.removeVipStatusCallback(handleVipStatusChange);
+    };
+  }, []);
 
   const handlePlayAfterSelect = () => {
     setShowTimeModal(true);
@@ -158,8 +187,17 @@ const HairDryerDetailScreen: React.FC = () => {
   };
 
   const handleDryerSelect = (selectedDryer: any) => {
-    console.log('Selected dryer:', selectedDryer.name);
+    console.log('Selected dryer:', selectedDryer.name, 'needVip:', selectedDryer.needVip, 'isVip:', isVip);
     
+    // Check if item needs VIP and user is not VIP
+    if (selectedDryer.needVip && !isVip) {
+      console.log('Setting pending dryer and showing VIP modal');
+      setPendingSelectedDryer(selectedDryer);
+      setShowNeedVipModal(true);
+      return;
+    }
+    
+    console.log('Direct navigation - no VIP check needed');
     // Dừng âm thanh hiện tại nếu đang phát
     if (isActive) {
       stopSound();
@@ -174,6 +212,37 @@ const HairDryerDetailScreen: React.FC = () => {
     
     // Navigate đến detail screen với dryer mới
     navigation.navigate('HairDryerDetail', { dryer: selectedDryer });
+  };
+
+  const navigateToPendingDryer = () => {
+    console.log('navigateToPendingDryer called with:', pendingSelectedDryer);
+    
+    if (pendingSelectedDryer) {
+      console.log('Navigating to pending dryer:', pendingSelectedDryer.name);
+      
+      // Dừng âm thanh hiện tại nếu đang phát
+      if (isActive) {
+        console.log('Stopping current sound');
+        stopSound();
+        setIsActive(false);
+      }
+      
+      // Reset các state về mặc định
+      setCountdown(0);
+      setPlayAfter(0);
+      setIsZoomedIn(false);
+      setShowTimeModal(false);
+      
+      // Navigate đến detail screen với dryer đã chọn
+      console.log('Attempting navigation to HairDryerDetail');
+      navigation.navigate('HairDryerDetail', { dryer: pendingSelectedDryer });
+      
+      // Reset pending dryer
+      setPendingSelectedDryer(null);
+      console.log('Reset pending dryer to null');
+    } else {
+      console.log('No pending dryer to navigate to');
+    }
   };
 
   const otherDryers = HAIR_DRYERS.filter(d => d.id !== dryer.id);
@@ -302,6 +371,15 @@ const HairDryerDetailScreen: React.FC = () => {
                       style={styles.otherDryerImage}
                       resizeMode="contain"
                     />
+                    {item.needVip && (
+                      <View style={styles.otherDryerVipBadge}>
+                        <Image 
+                          source={require('../../assets/icon/vip.png')} 
+                          style={styles.otherDryerVipIcon} 
+                          resizeMode="contain" 
+                        />
+                      </View>
+                    )}
                   </ImageBackground>
                 </TouchableOpacity>
               )}
@@ -325,6 +403,66 @@ const HairDryerDetailScreen: React.FC = () => {
       {soundFlashing && flashEnabled && (
         <View style={styles.flashOverlay} />
       )}
+
+      {/* Need VIP Modal */}
+      <NeedVipModal
+        visible={showNeedVipModal}
+        onClose={() => {
+          setShowNeedVipModal(false);
+          setPendingSelectedDryer(null);
+        }}
+        onWatchAds={async () => {
+          try {
+            console.log('Watch ads clicked, pending dryer:', pendingSelectedDryer?.name);
+            setShowNeedVipModal(false);
+            
+            const result = await AdManager.showRewardedAd();
+            console.log('Rewarded ad result:', result);
+            
+            if (result) {
+              console.log('Rewarded ad completed successfully');
+              // Grant temporary access to the selected item
+              setTimeout(() => {
+                navigateToPendingDryer();
+              }, 100); // Small delay to ensure modal is closed
+            } else {
+              console.log('Rewarded ad was not completed');
+              // Reset pending dryer since ad wasn't completed
+              setPendingSelectedDryer(null);
+            }
+          } catch (error) {
+            console.error('Error showing rewarded ad:', error);
+            // Reset pending dryer on error
+            setPendingSelectedDryer(null);
+          }
+        }}
+        onGoPremium={() => {
+          console.log('Go premium clicked');
+          setShowNeedVipModal(false);
+          setShowIAPModal(true);
+        }}
+        itemType="Hair Dryer"
+      />
+
+      {/* IAP Modal */}
+      <IAPModal
+        visible={showIAPModal}
+        onClose={() => {
+          setShowIAPModal(false);
+          // Clear pending dryer if user closes IAP modal without purchasing
+          setPendingSelectedDryer(null);
+        }}
+        onPurchase={() => {
+          console.log('Purchase completed');
+          setShowIAPModal(false);
+          // VIP status will be updated automatically via VIPManager callback
+          // Also navigate to the pending dryer if there is one
+          if (pendingSelectedDryer) {
+            console.log('IAP completed, navigating to pending dryer');
+            navigateToPendingDryer();
+          }
+        }}
+      />
 
       {/* Time Selection Modal */}
       <Modal
@@ -553,11 +691,25 @@ const styles = StyleSheet.create({
   otherDryerBackground: {
     flex: 1,
     padding: 8,
+    position: 'relative',
   },
   otherDryerImage: {
     flex: 1,
     width: '100%',
     height: '100%',
+  },
+  otherDryerVipBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  otherDryerVipIcon: {
+    width: 12,
+    height: 12,
   },
   adWrapper: {
     paddingHorizontal: 10,

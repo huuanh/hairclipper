@@ -21,6 +21,10 @@ import Sound from 'react-native-sound';
 import { CustomButton } from '../components';
 import { useSoundPlayer } from '../components/SoundPlayer';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
+import NeedVipModal from '../components/NeedVipModal';
+import IAPModal from '../components/IAPModal';
+import VIPManager from '../utils/VIPManager';
+import AdManager from '../utils/AdManager';
 import { Colors, GradientStyles } from '../constants/colors';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { SCREEN_NAMES } from '../constants';
@@ -58,6 +62,10 @@ const FunnySoundDetailScreen: React.FC = () => {
   const [countdown, setCountdown] = useState(0);
   const [isZoomedIn, setIsZoomedIn] = useState(false);
   const [showTimeModal, setShowTimeModal] = useState(false);
+  const [showNeedVipModal, setShowNeedVipModal] = useState(false);
+  const [showIAPModal, setShowIAPModal] = useState(false);
+  const [isVip, setIsVip] = useState(false);
+  const [pendingSelectedSound, setPendingSelectedSound] = useState<any>(null);
 
   // Sound player với flash integration  
   const { playSound, stopSound, isFlashing: soundFlashing } = useSoundPlayer({
@@ -72,6 +80,27 @@ const FunnySoundDetailScreen: React.FC = () => {
   useEffect(() => {
     console.log('Flash state changed:', { flashEnabled, soundFlashing });
   }, [flashEnabled, soundFlashing]);
+
+  // Check VIP status
+  useEffect(() => {
+    const checkVipStatus = async () => {
+      const vipManager = VIPManager.getInstance();
+      const vipStatus = vipManager.getIsVip();
+      setIsVip(vipStatus);
+    };
+    checkVipStatus();
+
+    const vipManager = VIPManager.getInstance();
+    const handleVipStatusChange = (status: boolean) => {
+      setIsVip(status);
+    };
+    
+    vipManager.addVipStatusCallback(handleVipStatusChange);
+
+    return () => {
+      vipManager.removeVipStatusCallback(handleVipStatusChange);
+    };
+  }, []);
 
   const handlePlayAfterSelect = () => {
     setShowTimeModal(true);
@@ -158,8 +187,17 @@ const FunnySoundDetailScreen: React.FC = () => {
   };
 
   const handleSoundSelect = (selectedSound: any) => {
-    console.log('Selected sound:', selectedSound.name);
+    console.log('Selected sound:', selectedSound.name, 'needVip:', selectedSound.needVip, 'isVip:', isVip);
     
+    // Check if item needs VIP and user is not VIP
+    if (selectedSound.needVip && !isVip) {
+      console.log('Setting pending sound and showing VIP modal');
+      setPendingSelectedSound(selectedSound);
+      setShowNeedVipModal(true);
+      return;
+    }
+    
+    console.log('Direct navigation - no VIP check needed');
     // Dừng âm thanh hiện tại nếu đang phát
     if (isActive) {
       stopSound();
@@ -174,6 +212,37 @@ const FunnySoundDetailScreen: React.FC = () => {
     
     // Navigate đến detail screen với sound mới
     navigation.navigate('FunnySoundDetail', { sound: selectedSound });
+  };
+
+  const navigateToPendingSound = () => {
+    console.log('navigateToPendingSound called with:', pendingSelectedSound);
+    
+    if (pendingSelectedSound) {
+      console.log('Navigating to pending sound:', pendingSelectedSound.name);
+      
+      // Dừng âm thanh hiện tại nếu đang phát
+      if (isActive) {
+        console.log('Stopping current sound');
+        stopSound();
+        setIsActive(false);
+      }
+      
+      // Reset các state về mặc định
+      setCountdown(0);
+      setPlayAfter(0);
+      setIsZoomedIn(false);
+      setShowTimeModal(false);
+      
+      // Navigate đến detail screen với sound đã chọn
+      console.log('Attempting navigation to FunnySoundDetail');
+      navigation.navigate('FunnySoundDetail', { sound: pendingSelectedSound });
+      
+      // Reset pending sound
+      setPendingSelectedSound(null);
+      console.log('Reset pending sound to null');
+    } else {
+      console.log('No pending sound to navigate to');
+    }
   };
 
   const otherSounds = FUNNY_SOUNDS.filter(s => s.id !== funnySound.id);
@@ -302,6 +371,15 @@ const FunnySoundDetailScreen: React.FC = () => {
                       style={styles.otherSoundImage}
                       resizeMode="contain"
                     />
+                    {item.needVip && (
+                      <View style={styles.otherSoundVipBadge}>
+                        <Image 
+                          source={require('../../assets/icon/vip.png')} 
+                          style={styles.otherSoundVipIcon} 
+                          resizeMode="contain" 
+                        />
+                      </View>
+                    )}
                   </ImageBackground>
                 </TouchableOpacity>
               )}
@@ -325,6 +403,66 @@ const FunnySoundDetailScreen: React.FC = () => {
       {soundFlashing && flashEnabled && (
         <View style={styles.flashOverlay} />
       )}
+
+      {/* Need VIP Modal */}
+      <NeedVipModal
+        visible={showNeedVipModal}
+        onClose={() => {
+          setShowNeedVipModal(false);
+          setPendingSelectedSound(null);
+        }}
+        onWatchAds={async () => {
+          try {
+            console.log('Watch ads clicked, pending sound:', pendingSelectedSound?.name);
+            setShowNeedVipModal(false);
+            
+            const result = await AdManager.showRewardedAd();
+            console.log('Rewarded ad result:', result);
+            
+            if (result) {
+              console.log('Rewarded ad completed successfully');
+              // Grant temporary access to the selected item
+              setTimeout(() => {
+                navigateToPendingSound();
+              }, 100); // Small delay to ensure modal is closed
+            } else {
+              console.log('Rewarded ad was not completed');
+              // Reset pending sound since ad wasn't completed
+              setPendingSelectedSound(null);
+            }
+          } catch (error) {
+            console.error('Error showing rewarded ad:', error);
+            // Reset pending sound on error
+            setPendingSelectedSound(null);
+          }
+        }}
+        onGoPremium={() => {
+          console.log('Go premium clicked');
+          setShowNeedVipModal(false);
+          setShowIAPModal(true);
+        }}
+        itemType="Funny Sound"
+      />
+
+      {/* IAP Modal */}
+      <IAPModal
+        visible={showIAPModal}
+        onClose={() => {
+          setShowIAPModal(false);
+          // Clear pending sound if user closes IAP modal without purchasing
+          setPendingSelectedSound(null);
+        }}
+        onPurchase={() => {
+          console.log('Purchase completed');
+          setShowIAPModal(false);
+          // VIP status will be updated automatically via VIPManager callback
+          // Also navigate to the pending sound if there is one
+          if (pendingSelectedSound) {
+            console.log('IAP completed, navigating to pending sound');
+            navigateToPendingSound();
+          }
+        }}
+      />
 
       {/* Time Selection Modal */}
       <Modal
@@ -553,11 +691,25 @@ const styles = StyleSheet.create({
   otherSoundBackground: {
     flex: 1,
     padding: 8,
+    position: 'relative',
   },
   otherSoundImage: {
     flex: 1,
     width: '100%',
     height: '100%',
+  },
+  otherSoundVipBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  otherSoundVipIcon: {
+    width: 12,
+    height: 12,
   },
   adWrapper: {
     paddingHorizontal: 10,
