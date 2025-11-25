@@ -24,7 +24,7 @@ import { NativeAdComponent } from '../utils/NativeAdComponent';
 import NeedVipModal from '../components/NeedVipModal';
 import IAPModal from '../components/IAPModal';
 import VIPManager from '../utils/VIPManager';
-import AdManager from '../utils/AdManager';
+import AdManager, { ADS_UNIT } from '../utils/AdManager';
 import { Colors, GradientStyles } from '../constants/colors';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { SCREEN_NAMES } from '../constants';
@@ -399,7 +399,8 @@ const FunnySoundDetailScreen: React.FC = () => {
       {/* Ad Section - Moved outside main container */}
       {!isZoomedIn && (
         <View style={styles.adWrapper}>
-          <NativeAdComponent />
+          <NativeAdComponent 
+            adUnitId={ADS_UNIT.NATIVE_FUNNYSOUND_ITEM}/>
         </View>
       )}
 

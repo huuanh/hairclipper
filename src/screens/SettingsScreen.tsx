@@ -21,6 +21,7 @@ import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { IAPModal } from '../components';
 import VIPManager from '../utils/VIPManager';
 import { useTranslation } from '../hooks/useTranslation';
+import { ADS_UNIT } from '../utils/AdManager';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -305,7 +306,9 @@ const SettingsScreen: React.FC = () => {
 
         {/* Native Ad */}
         <View style={styles.adWrapper}>
-          <NativeAdComponent hasMedia={true} />
+          <NativeAdComponent 
+            adUnitId={ADS_UNIT.NATIVE_SETTINGS}
+            hasMedia={true} />
         </View>
       </View>
 

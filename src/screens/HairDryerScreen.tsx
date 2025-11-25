@@ -21,7 +21,7 @@ import { SCREEN_NAMES } from '../constants';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import VIPManager from '../utils/VIPManager';
-import AdManager from '../utils/AdManager';
+import AdManager, { ADS_UNIT } from '../utils/AdManager';
 import { useTranslation } from '../hooks/useTranslation';
 
 const HairDryerScreen: React.FC = () => {
@@ -202,7 +202,8 @@ const HairDryerScreen: React.FC = () => {
         
         {/* Native Ad at the bottom */}
         <View style={styles.adWrapper}>
-          <NativeAdComponent />
+          <NativeAdComponent 
+            adUnitId={ADS_UNIT.NATIVE_HAIRDRY}/>
         </View>
       </View>
 

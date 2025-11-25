@@ -181,9 +181,9 @@ const LanguageSelectionScreen: React.FC = () => {
             {/* Native Ad */}
             <View style={styles.adContainer}>
                 <NativeAdComponent
-                    adUnitId={ADS_UNIT.NATIVE}
+                    adUnitId={ADS_UNIT.NATIVE_LANGUAGE}
                     hasMedia={true}
-                    hasToggleMedia={true}
+                    // hasToggleMedia={true}
                 />
             </View>
         </LinearGradient>
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: 15,
         paddingHorizontal: 16,
-        marginBottom: 12,
+        marginBottom: 6,
         borderRadius: 12,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
         borderWidth: 1,

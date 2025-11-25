@@ -138,7 +138,9 @@ const OnboardingScreen: React.FC = () => {
                 </View>)}
             {/* Native Ads Section */}
             <View style={styles.nativeAdsContainer}>
-                <NativeAdComponent adUnitId={ADS_UNIT.NATIVE} hasMedia={true} />
+                <NativeAdComponent 
+                    adUnitId={ADS_UNIT.NATIVE_ONBOARD} 
+                    hasMedia={true} />
             </View>
             {currentPage !== ONBOARDING_DATA.length - 1 && (
                 <View style={styles.footer}>

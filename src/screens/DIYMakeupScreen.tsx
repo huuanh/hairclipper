@@ -21,6 +21,7 @@ import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { Colors, GradientStyles } from '../constants/colors';
 import { SCREEN_NAMES } from '../constants';
 import { useTranslation } from '../hooks/useTranslation';
+import { ADS_UNIT } from '../utils/AdManager';
 
 const DIYMakeupScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -183,7 +184,9 @@ const DIYMakeupScreen: React.FC = () => {
         </View>
 
         <View style={styles.adWrapper}>
-          <NativeAdComponent hasMedia={true} />
+          <NativeAdComponent 
+            adUnitId={ADS_UNIT.NATIVE_DIYMAKER}
+            hasMedia={true} />
         </View>
       </View>
     </LinearGradient>

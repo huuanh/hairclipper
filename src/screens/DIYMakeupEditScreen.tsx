@@ -33,6 +33,7 @@ import { Colors, GradientStyles } from '../constants/colors';
 import { useTranslation } from '../hooks/useTranslation';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
+import { ADS_UNIT } from '../utils/AdManager';
 
 type DIYMakeupEditRouteProp = RouteProp<RootStackParamList, 'DIYMakeupEdit'>;
 
@@ -730,7 +731,9 @@ const DIYMakeupEditScreen: React.FC = () => {
             </View>
 
             <View style={styles.adWrapper}>
-              <NativeAdComponent hasMedia={true} />
+              <NativeAdComponent 
+                adUnitId={ADS_UNIT.NATIVE_DIYMAKER_SAVE}
+                hasMedia={true} />
             </View>
 
             <TouchableOpacity

@@ -52,6 +52,15 @@ const LoadingScreen: React.FC = () => {
         await vipManager.initialize();
         console.log('✅ VIP Manager initialized successfully');
         
+        // Show App Open Ad after all services are initialized
+        console.log('📱 Attempting to show App Open Ad...');
+        try {
+          await AdManager.showAppOpenAd();
+          console.log('✅ App Open Ad shown successfully');
+        } catch (error) {
+          console.log('❌ Failed to show App Open Ad:', error);
+        }
+        
         console.log('✅ All services initialized successfully');
       } catch (error) {
         console.error('❌ Failed to initialize services:', error);

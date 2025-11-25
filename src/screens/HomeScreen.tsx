@@ -20,6 +20,7 @@ import { SCREEN_NAMES } from '../constants';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { IAPModal } from '../components';
 import { useTranslation } from '../hooks/useTranslation';
+import { ADS_UNIT } from '../utils/AdManager';
 
 const { width } = Dimensions.get('window');
 
@@ -143,7 +144,8 @@ const HomeScreen: React.FC = () => {
         
           {/* Native Ad at the bottom */}
           <View style={styles.adWrapper}>
-            <NativeAdComponent />
+            <NativeAdComponent 
+              adUnitId={ADS_UNIT.NATIVE_HOME}/>
           </View>
       </View>
       

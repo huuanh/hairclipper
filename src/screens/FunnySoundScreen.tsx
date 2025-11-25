@@ -18,7 +18,7 @@ import { CustomButton, NeedVipModal, IAPModal } from '../components';
 import { useSoundPlayer } from '../components/SoundPlayer';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import VIPManager from '../utils/VIPManager';
-import AdManager from '../utils/AdManager';
+import AdManager, { ADS_UNIT } from '../utils/AdManager';
 import { Colors, GradientStyles } from '../constants/colors';
 import { FUNNY_SOUNDS } from '../constants/data';
 import { SCREEN_NAMES } from '../constants';
@@ -223,7 +223,8 @@ const FunnySoundScreen: React.FC = () => {
         />
         
         <View style={styles.adWrapper}>
-          <NativeAdComponent />
+          <NativeAdComponent 
+            adUnitId={ADS_UNIT.NATIVE_FUNNYSOUND}/>
         </View>
       </View>
 
