@@ -6,7 +6,7 @@ import { checkVipStatus } from './VipUtils';
 // import AnalyticsManager from './AnalyticsManager';
 import remoteConfigManager from './RemoteConfigManager';
 
-const IS_PRODUCTION = false; // Set to true for production builds
+const IS_PRODUCTION = true; // Set to true for production builds
 
 let AnalyticsManager = null;
 try {

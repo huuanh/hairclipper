@@ -83,8 +83,10 @@ const LoadingScreen: React.FC = () => {
         
         if (!languageSelected) {
           navigation.navigate(SCREEN_NAMES.LANGUAGE_SELECTION as never);
-        } else {
+        } else if (!onboardingCompleted) {
           navigation.navigate(SCREEN_NAMES.ONBOARDING as never);
+        } else {
+          navigation.navigate(SCREEN_NAMES.HOME as never);
         }
       } catch (error) {
         console.error('Error checking navigation flow:', error);
@@ -138,6 +140,10 @@ const LoadingScreen: React.FC = () => {
           ]}>
           <Image source={require('../../assets/icon/icon.png')} />
         </Animated.View> */}
+        <Image
+          source={require('../../assets/icon/icon.png')}
+          style={styles.logoContainer}
+        />
         <Text style={styles.title}>Hair Clipper Prank</Text>
         <Text style={styles.subtitle}>Loading...</Text>
       </View>
@@ -159,6 +165,7 @@ const styles = StyleSheet.create({
     height: 100,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 22,
     marginBottom: 20,
   },
   logo: {

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     Text,
@@ -6,6 +6,7 @@ import {
     Dimensions,
     Image,
     ScrollView,
+    BackHandler,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,6 +27,25 @@ const OnboardingScreen: React.FC = () => {
     const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(0);
     const pagerRef = useRef<PagerView>(null);
+
+    useEffect(() => {
+        // Reset navigation stack to prevent going back
+        // navigation.reset({
+        //     index: 0,
+        //     routes: [{ name: SCREEN_NAMES.ONBOARDING as never }],
+        // });
+
+        // Handle hardware back button on Android
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            () => {
+                // Prevent going back from onboarding
+                return true; // Return true to prevent default back behavior
+            }
+        );
+
+        return () => backHandler.remove();
+    }, [navigation]);
 
     const getOnboardingData = () => [
         {

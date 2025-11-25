@@ -262,8 +262,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   optionIcon: {
-    width: 30,
-    height: 30,
+    width: 68,
+    height: 68,
     // tintColor: Colors.white,
   },
   optionTitle: {

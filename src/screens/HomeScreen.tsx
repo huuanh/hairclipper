@@ -9,6 +9,9 @@ import {
   Image,
   ImageBackground,
   Dimensions,
+  BackHandler,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -21,6 +24,7 @@ import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { IAPModal } from '../components';
 import { useTranslation } from '../hooks/useTranslation';
 import AdManager, { ADS_UNIT } from '../utils/AdManager';
+import messaging from '@react-native-firebase/messaging';
 
 const { width } = Dimensions.get('window');
 
@@ -59,9 +63,70 @@ const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [showIAPModal, setShowIAPModal] = useState(false);
-  
+
   // Use translation hook
   const { t } = useTranslation();
+
+  async function requestPermission() {
+    try {
+      // Android 13+ cần POST_NOTIFICATIONS
+      if (Platform.OS === 'android' && Platform.Version >= 33) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Notification permission denied (Android 13+)');
+          return false;
+        }
+      }
+
+      // Firebase (iOS + Android)
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled) {
+        console.log('Notification permission granted');
+        return true;
+      } else {
+        console.log('Notification permission denied');
+        return false;
+      }
+    } catch (error) {
+      console.error('Permission error:', error);
+      return false;
+    }
+  }
+
+
+  useEffect(() => {
+    // Reset navigation stack to prevent going back
+    // navigation.reset({
+    //     index: 0,
+    //     routes: [{ name: SCREEN_NAMES.ONBOARDING as never }],
+    // });
+
+    // Handle hardware back button on Android
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        // Prevent going back from onboarding
+        return true; // Return true to prevent default back behavior
+      }
+    );
+
+    return () => backHandler.remove();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      requestPermission();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
 
   const handleMenuPress = async (screen: string) => {
     try {
@@ -153,7 +218,7 @@ const HomeScreen: React.FC = () => {
                         </TouchableOpacity>
                       </View>
                     </View>
-                    <Image source={item.image} style={styles.cardImage}  />
+                    <Image source={item.image} style={styles.cardImage} />
                   </View>
                 </ImageBackground>
               </TouchableOpacity>
@@ -161,14 +226,14 @@ const HomeScreen: React.FC = () => {
           </View>
 
         </ScrollView>
-        
-          {/* Native Ad at the bottom */}
-          <View style={styles.adWrapper}>
-            <NativeAdComponent 
-              adUnitId={ADS_UNIT.NATIVE_HOME}/>
-          </View>
+
+        {/* Native Ad at the bottom */}
+        <View style={styles.adWrapper}>
+          <NativeAdComponent
+            adUnitId={ADS_UNIT.NATIVE_HOME} />
+        </View>
       </View>
-      
+
       <IAPModal
         visible={showIAPModal}
         onClose={handleCloseIAPModal}
