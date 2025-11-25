@@ -98,7 +98,7 @@ class AdManager {
         
         // Interstitial ads timing control
         this.lastInterstitialAdTime = 0; // Track last interstitial ad show time
-        this.INTERSTITIAL_AD_COOLDOWN = 5; // Default 60 seconds, will be overridden by Remote Config
+        this.INTERSTITIAL_AD_COOLDOWN = 60; // Default 60 seconds, will be overridden by Remote Config
 
         // Preloaded ads cache
         this.preloadedAds = {

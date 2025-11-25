@@ -102,6 +102,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'Make Some Noise, Break the Silence!',
     'onboarding.next': 'Next',
     'onboarding.get_started': 'Get Started',
+    // Network Connection
+    'network.no_connection_title': 'No Internet Connection',
+    'network.no_connection_message': 'Please check your internet connection and try again. This app requires internet to function properly.',
+    'network.retrying': 'Checking connection...',
+    'network.waiting': 'Waiting for connection...',
+    'network.retrying_button': 'Checking...',
+    'network.retry_button': 'Try Again',
+    'network.tips_title': 'Connection Tips:',
+    'network.tip_wifi': 'Check your WiFi connection',
+    'network.tip_mobile': 'Try switching to mobile data',
+    'network.tip_airplane': 'Turn off Airplane mode',
+    'network.tip_restart': 'Restart your router or device',
   },
   'ko': {
     // Home Screen
@@ -207,6 +219,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': '소음을 만들고 침묵을 깨뜨리세요!',
     'onboarding.next': '다음',
     'onboarding.get_started': '시작하기',
+    // Network Connection
+    'network.no_connection_title': '인터넷 연결 없음',
+    'network.no_connection_message': '인터넷 연결을 확인하고 다시 시도하세요. 이 앱은 정상적으로 작동하려면 인터넷이 필요합니다.',
+    'network.retrying': '연결 확인 중...',
+    'network.waiting': '연결을 기다리는 중...',
+    'network.retrying_button': '확인 중...',
+    'network.retry_button': '다시 시도',
+    'network.tips_title': '연결 팁:',
+    'network.tip_wifi': 'WiFi 연결을 확인하세요',
+    'network.tip_mobile': '모바일 데이터로 전환해 보세요',
+    'network.tip_airplane': '비행기 모드를 끄세요',
+    'network.tip_restart': '라우터나 기기를 재시작하세요',
   },
   'ja': {
     // Home Screen
@@ -311,6 +335,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': '音を立てて、静寂を破ろう！',
     'onboarding.next': '次へ',
     'onboarding.get_started': '始める',
+    // Network Connection
+    'network.no_connection_title': 'インターネット接続なし',
+    'network.no_connection_message': 'インターネット接続を確認して、もう一度お試しください。このアプリは正常に機能するためにインターネットが必要です。',
+    'network.retrying': '接続を確認中...',
+    'network.waiting': '接続を待機中...',
+    'network.retrying_button': '確認中...',
+    'network.retry_button': '再試行',
+    'network.tips_title': '接続のヒント:',
+    'network.tip_wifi': 'WiFi接続を確認してください',
+    'network.tip_mobile': 'モバイルデータに切り替えてみてください',
+    'network.tip_airplane': '機内モードをオフにしてください',
+    'network.tip_restart': 'ルーターまたはデバイスを再起動してください',
   },
   'es': {
     // Home Screen
@@ -415,6 +451,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': '¡Haz Ruido, Rompe el Silencio!',
     'onboarding.next': 'Siguiente',
     'onboarding.get_started': 'Comenzar',
+    // Network Connection
+    'network.no_connection_title': 'Sin conexión a internet',
+    'network.no_connection_message': 'Por favor, verifica tu conexión a internet e inténtalo de nuevo. Esta aplicación requiere internet para funcionar correctamente.',
+    'network.retrying': 'Verificando conexión...',
+    'network.waiting': 'Esperando conexión...',
+    'network.retrying_button': 'Verificando...',
+    'network.retry_button': 'Intentar de nuevo',
+    'network.tips_title': 'Consejos de conexión:',
+    'network.tip_wifi': 'Verifica tu conexión WiFi',
+    'network.tip_mobile': 'Intenta cambiar a datos móviles',
+    'network.tip_airplane': 'Desactiva el modo avión',
+    'network.tip_restart': 'Reinicia tu router o dispositivo',
   },
   'pt': {
     // Home Screen
@@ -519,6 +567,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'Faça Barulho, Quebre o Silêncio!',
     'onboarding.next': 'Próximo',
     'onboarding.get_started': 'Começar',
+    // Network Connection
+    'network.no_connection_title': 'Sem conexão com a internet',
+    'network.no_connection_message': 'Por favor, verifique sua conexão com a internet e tente novamente. Este aplicativo requer internet para funcionar corretamente.',
+    'network.retrying': 'Verificando conexão...',
+    'network.waiting': 'Aguardando conexão...',
+    'network.retrying_button': 'Verificando...',
+    'network.retry_button': 'Tentar novamente',
+    'network.tips_title': 'Dicas de conexão:',
+    'network.tip_wifi': 'Verifique sua conexão WiFi',
+    'network.tip_mobile': 'Tente alternar para dados móveis',
+    'network.tip_airplane': 'Desative o modo avião',
+    'network.tip_restart': 'Reinicie seu roteador ou dispositivo',
   },
   'fr': {
     // Home Screen
@@ -624,6 +684,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'Faites du Bruit, Brisez le Silence !',
     'onboarding.next': 'Suivant',
     'onboarding.get_started': 'Commencer',
+    // Network Connection
+    'network.no_connection_title': 'Pas de connexion Internet',
+    'network.no_connection_message': 'Veuillez vérifier votre connexion internet et réessayer. Cette application nécessite internet pour fonctionner correctement.',
+    'network.retrying': 'Vérification de la connexion...',
+    'network.waiting': 'En attente de connexion...',
+    'network.retrying_button': 'Vérification...',
+    'network.retry_button': 'Réessayer',
+    'network.tips_title': 'Conseils de connexion:',
+    'network.tip_wifi': 'Vérifiez votre connexion WiFi',
+    'network.tip_mobile': 'Essayez de passer aux données mobiles',
+    'network.tip_airplane': 'Désactivez le mode avion',
+    'network.tip_restart': 'Redémarrez votre routeur ou appareil',
   },
   'de': {
     // Home Screen
@@ -728,6 +800,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'Mach Lärm, Durchbrich die Stille!',
     'onboarding.next': 'Weiter',
     'onboarding.get_started': 'Loslegen',
+    // Network Connection
+    'network.no_connection_title': 'Keine Internetverbindung',
+    'network.no_connection_message': 'Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut. Diese App benötigt Internet, um ordnungsgemäß zu funktionieren.',
+    'network.retrying': 'Verbindung wird überprüft...',
+    'network.waiting': 'Warten auf Verbindung...',
+    'network.retrying_button': 'Überprüfung...',
+    'network.retry_button': 'Erneut versuchen',
+    'network.tips_title': 'Verbindungstipps:',
+    'network.tip_wifi': 'Überprüfen Sie Ihre WiFi-Verbindung',
+    'network.tip_mobile': 'Versuchen Sie, zu mobilen Daten zu wechseln',
+    'network.tip_airplane': 'Flugmodus deaktivieren',
+    'network.tip_restart': 'Router oder Gerät neu starten',
   },
   'hi': {
     // Home Screen
@@ -832,6 +916,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'आवाज़ करें, खामोशी तोड़ें!',
     'onboarding.next': 'अगला',
     'onboarding.get_started': 'शुरू करें',
+    // Network Connection
+    'network.no_connection_title': 'इंटरनेट कनेक्शन नहीं',
+    'network.no_connection_message': 'कृपया अपना इंटरनेट कनेक्शन जांचें और पुनः प्रयास करें। इस ऐप को सही तरीके से काम करने के लिए इंटरनेट की आवश्यकता है।',
+    'network.retrying': 'कनेक्शन जांच रहे हैं...',
+    'network.waiting': 'कनेक्शन का इंतजार...',
+    'network.retrying_button': 'जांच रहे हैं...',
+    'network.retry_button': 'पुनः प्रयास',
+    'network.tips_title': 'कनेक्शन टिप्स:',
+    'network.tip_wifi': 'अपना WiFi कनेक्शन जांचें',
+    'network.tip_mobile': 'मोबाइल डेटा पर स्विच करने की कोशिश करें',
+    'network.tip_airplane': 'एयरप्लेन मोड बंद करें',
+    'network.tip_restart': 'अपना राउटर या डिवाइस रीस्टार्ट करें',
   },
   'ar': {
     // Home Screen
@@ -936,6 +1032,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'اصنع ضجيجاً، اكسر الصمت!',
     'onboarding.next': 'التالي',
     'onboarding.get_started': 'ابدأ',
+    // Network Connection
+    'network.no_connection_title': 'لا يوجد اتصال بالإنترنت',
+    'network.no_connection_message': 'يرجى فحص اتصالك بالإنترنت والمحاولة مرة أخرى. يتطلب هذا التطبيق اتصال بالإنترنت ليعمل بشكل صحيح.',
+    'network.retrying': 'جاري فحص الاتصال...',
+    'network.waiting': 'بانتظار الاتصال...',
+    'network.retrying_button': 'جاري الفحص...',
+    'network.retry_button': 'حاول مرة أخرى',
+    'network.tips_title': 'نصائح الاتصال:',
+    'network.tip_wifi': 'تحقق من اتصال WiFi',
+    'network.tip_mobile': 'جرب التبديل إلى بيانات الهاتف',
+    'network.tip_airplane': 'قم بإيقاف وضع الطيران',
+    'network.tip_restart': 'أعد تشغيل الراوتر أو الجهاز',
   },
   'vi': {
     // Home Screen
@@ -1038,6 +1146,20 @@ export const TRANSLATIONS = {
     'onboarding.hair_clipper.subtitle': 'Cắt Như Chuyên Gia',
     'onboarding.funny_sounds.title': 'Têng Âm Thanh Vui Nhộn',
     'onboarding.funny_sounds.subtitle': 'Tạo Tiếng ồn, Phá Vỡ Sự Yên Lặng!',
+    'onboarding.next': 'Tiếp theo',
+    'onboarding.get_started': 'Bắt đầu',
+    // Network Connection
+    'network.no_connection_title': 'Không có kết nối Internet',
+    'network.no_connection_message': 'Vui lòng kiểm tra kết nối internet và thử lại. Ứng dụng này cần internet để hoạt động bình thường.',
+    'network.retrying': 'Đang kiểm tra kết nối...',
+    'network.waiting': 'Đang chờ kết nối...',
+    'network.retrying_button': 'Đang kiểm tra...',
+    'network.retry_button': 'Thử lại',
+    'network.tips_title': 'Mẹo kết nối:',
+    'network.tip_wifi': 'Kiểm tra kết nối WiFi',
+    'network.tip_mobile': 'Thử chuyển sang dữ liệu di động',
+    'network.tip_airplane': 'Tắt chế độ máy bay',
+    'network.tip_restart': 'Khởi động lại router hoặc thiết bị',
   },
   'ru': {
     // Home Screen
@@ -1142,6 +1264,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'Шумите, Нарушайте Тишину!',
     'onboarding.next': 'Далее',
     'onboarding.get_started': 'Начать',
+    // Network Connection
+    'network.no_connection_title': 'Нет подключения к Интернету',
+    'network.no_connection_message': 'Пожалуйста, проверьте подключение к Интернету и попробуйте снова. Для корректной работы этому приложению требуется Интернет.',
+    'network.retrying': 'Проверка соединения...',
+    'network.waiting': 'Ожидание соединения...',
+    'network.retrying_button': 'Проверка...',
+    'network.retry_button': 'Повторить',
+    'network.tips_title': 'Советы по подключению:',
+    'network.tip_wifi': 'Проверьте WiFi-соединение',
+    'network.tip_mobile': 'Попробуйте переключиться на мобильные данные',
+    'network.tip_airplane': 'Отключите авиарежим',
+    'network.tip_restart': 'Перезагрузите маршрутизатор или устройство',
   },
   'tr': {
     // Home Screen
@@ -1246,6 +1380,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'Gürültü Yap, Sessizliği Boz!',
     'onboarding.next': 'Sonraki',
     'onboarding.get_started': 'Başla',
+    // Network Connection
+    'network.no_connection_title': 'İnternet bağlantısı yok',
+    'network.no_connection_message': 'Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin. Bu uygulama düzgün çalışmak için internet gerektirir.',
+    'network.retrying': 'Bağlantı kontrol ediliyor...',
+    'network.waiting': 'Bağlantı bekleniyor...',
+    'network.retrying_button': 'Kontrol ediliyor...',
+    'network.retry_button': 'Tekrar dene',
+    'network.tips_title': 'Bağlantı ipuçları:',
+    'network.tip_wifi': 'WiFi bağlantınızı kontrol edin',
+    'network.tip_mobile': 'Mobil veriye geçmeyi deneyin',
+    'network.tip_airplane': 'Uçak modunu kapatın',
+    'network.tip_restart': 'Modeminizi veya cihazınızı yeniden başlatın',
   },
   'id': {
     // Home Screen
@@ -1350,6 +1496,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'Buat Keributan, Pecahkan Keheningan!',
     'onboarding.next': 'Lanjut',
     'onboarding.get_started': 'Mulai',
+    // Network Connection
+    'network.no_connection_title': 'Tidak ada koneksi internet',
+    'network.no_connection_message': 'Harap periksa koneksi internet Anda dan coba lagi. Aplikasi ini memerlukan internet untuk berfungsi dengan benar.',
+    'network.retrying': 'Memeriksa koneksi...',
+    'network.waiting': 'Menunggu koneksi...',
+    'network.retrying_button': 'Memeriksa...',
+    'network.retry_button': 'Coba lagi',
+    'network.tips_title': 'Tips koneksi:',
+    'network.tip_wifi': 'Periksa koneksi WiFi Anda',
+    'network.tip_mobile': 'Coba beralih ke data seluler',
+    'network.tip_airplane': 'Matikan mode pesawat',
+    'network.tip_restart': 'Restart router atau perangkat Anda',
   },
   'nl': {
     // Home Screen
@@ -1454,6 +1612,18 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'Maak Lawaai, Doorbreek de Stilte!',
     'onboarding.next': 'Volgende',
     'onboarding.get_started': 'Aan de slag',
+    // Network Connection
+    'network.no_connection_title': 'Geen internetverbinding',
+    'network.no_connection_message': 'Controleer uw internetverbinding en probeer het opnieuw. Deze app vereist internet om goed te functioneren.',
+    'network.retrying': 'Verbinding controleren...',
+    'network.waiting': 'Wachten op verbinding...',
+    'network.retrying_button': 'Controleren...',
+    'network.retry_button': 'Opnieuw proberen',
+    'network.tips_title': 'Verbindingstips:',
+    'network.tip_wifi': 'Controleer uw WiFi-verbinding',
+    'network.tip_mobile': 'Probeer over te schakelen naar mobiele data',
+    'network.tip_airplane': 'Schakel vliegtuigmodus uit',
+    'network.tip_restart': 'Start uw router of apparaat opnieuw op',
   },
   'th': {
     // Home Screen
@@ -1558,5 +1728,17 @@ export const TRANSLATIONS = {
     'onboarding.funny_sounds.subtitle': 'สร้างเสียง, ทำลายความเงียบ!',
     'onboarding.next': 'ถัดไป',
     'onboarding.get_started': 'เริ่มต้น',
+    // Network Connection
+    'network.no_connection_title': 'ไม่มีการเชื่อมต่ออินเทอร์เน็ต',
+    'network.no_connection_message': 'กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของคุณและลองอีกครั้ง แอปนี้ต้องการอินเทอร์เน็ตเพื่อทำงานอย่างถูกต้อง',
+    'network.retrying': 'กำลังตรวจสอบการเชื่อมต่อ...',
+    'network.waiting': 'รอการเชื่อมต่อ...',
+    'network.retrying_button': 'กำลังตรวจสอบ...',
+    'network.retry_button': 'ลองอีกครั้ง',
+    'network.tips_title': 'เคล็ดลับการเชื่อมต่อ:',
+    'network.tip_wifi': 'ตรวจสอบการเชื่อมต่อ WiFi ของคุณ',
+    'network.tip_mobile': 'ลองเปลี่ยนไปใช้ข้อมูลมือถือ',
+    'network.tip_airplane': 'ปิดโหมดเครื่องบิน',
+    'network.tip_restart': 'รีสตาร์ทเราเตอร์หรืออุปกรณ์ของคุณ',
   }
 };

@@ -27,9 +27,13 @@ const LoadingScreen: React.FC = () => {
       try {
         console.log('🚀 Initializing all services...');
         
-        // Initialize AdMob
+        // Initialize AdMob first (doesn't depend on Firebase)
         await AdManager.initialize();
         console.log('✅ AdMob initialized successfully');
+        
+        // Wait a moment for Firebase to be ready (initialized in App.tsx)
+        console.log('⏳ Waiting for Firebase to be ready...');
+        await new Promise<void>(resolve => setTimeout(resolve, 1500));
         
         // Initialize Firebase Remote Config
         await RemoteConfigManager.initialize();

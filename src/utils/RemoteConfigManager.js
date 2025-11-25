@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import firebase from '@react-native-firebase/app';
 import remoteConfig from '@react-native-firebase/remote-config';
 
 class RemoteConfigManager {
@@ -16,6 +17,19 @@ class RemoteConfigManager {
 
     async initialize() {
         try {
+            // Check if Firebase app is initialized
+            if (!firebase.apps.length) {
+                console.log('⚠️ Firebase app not initialized yet, waiting...');
+                // Wait a bit for Firebase to initialize
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (!firebase.apps.length) {
+                    throw new Error('Firebase app not initialized after waiting');
+                }
+            }
+            
+            console.log('🔥 Firebase app is ready, initializing Remote Config...');
+            
             // Get Remote Config instance directly
             this.remoteConfig = remoteConfig();
             
