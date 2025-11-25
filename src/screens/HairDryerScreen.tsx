@@ -61,7 +61,7 @@ const HairDryerScreen: React.FC = () => {
     checkVipStatus();
   }, []);
 
-  const handleDryerPress = (dryer: typeof HAIR_DRYERS[0]) => {
+  const handleDryerPress = async (dryer: typeof HAIR_DRYERS[0]) => {
     // Check if item needs VIP and user is not VIP
     if (dryer.needVip && !isVip) {
       setSelectedItem(dryer);
@@ -69,8 +69,32 @@ const HairDryerScreen: React.FC = () => {
       return;
     }
     
-    // Navigate to detail if no VIP required or user is VIP
-    navigation.navigate(SCREEN_NAMES.HAIR_DRYER_DETAIL, { dryer });
+    // Show interstitial ad before navigation (skip for VIP users)
+    if (!isVip) {
+      try {
+        console.log('🎯 Showing interstitial ad for Hair Dryer item...');
+        await AdManager.showInterstitialAd(
+          ADS_UNIT.INTERSTITIAL_HAIRDRY,
+          () => {
+            // Navigate to detail after ad is closed
+            console.log('✅ Interstitial ad closed, navigating to Hair Dryer detail');
+            navigation.navigate(SCREEN_NAMES.HAIR_DRYER_DETAIL, { dryer });
+          },
+          (error: any) => {
+            // Navigate anyway if ad fails
+            console.log('❌ Interstitial ad failed:', error);
+            navigation.navigate(SCREEN_NAMES.HAIR_DRYER_DETAIL, { dryer });
+          }
+        );
+      } catch (error) {
+        // Fallback navigation if ad system fails
+        console.error('❌ Error showing interstitial ad:', error);
+        navigation.navigate(SCREEN_NAMES.HAIR_DRYER_DETAIL, { dryer });
+      }
+    } else {
+      // VIP users skip ads and navigate directly
+      navigation.navigate(SCREEN_NAMES.HAIR_DRYER_DETAIL, { dryer });
+    }
   };
 
   const handleBackPress = () => {

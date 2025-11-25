@@ -20,7 +20,7 @@ import { SCREEN_NAMES } from '../constants';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { IAPModal } from '../components';
 import { useTranslation } from '../hooks/useTranslation';
-import { ADS_UNIT } from '../utils/AdManager';
+import AdManager, { ADS_UNIT } from '../utils/AdManager';
 
 const { width } = Dimensions.get('window');
 
@@ -63,8 +63,28 @@ const HomeScreen: React.FC = () => {
   // Use translation hook
   const { t } = useTranslation();
 
-  const handleMenuPress = (screen: string) => {
-    navigation.navigate(screen as never);
+  const handleMenuPress = async (screen: string) => {
+    try {
+      // Show interstitial ad before navigation
+      console.log('🎯 Showing interstitial ad before navigation to:', screen);
+      await AdManager.showInterstitialAd(
+        ADS_UNIT.INTERSTITIAL_HOME,
+        () => {
+          // Navigate after ad is closed
+          console.log('📱 Interstitial ad closed, navigating to:', screen);
+          navigation.navigate(screen as never);
+        },
+        (error: any) => {
+          // Navigate even if ad fails
+          console.log('❌ Interstitial ad failed, navigating anyway:', error);
+          navigation.navigate(screen as never);
+        }
+      );
+    } catch (error) {
+      // Fallback navigation if ad fails
+      console.log('❌ Error showing interstitial ad, navigating anyway:', error);
+      navigation.navigate(screen as never);
+    }
   };
 
   const handleSettingsPress = () => {

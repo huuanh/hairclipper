@@ -139,7 +139,7 @@ const FunnySoundScreen: React.FC = () => {
       vibrate: false,
     });
 
-    const handleSoundPress = () => {
+    const handleSoundPress = async () => {
       // Check if item needs VIP and user is not VIP
       if (item.needVip && !isVip) {
         setSelectedItem(item);
@@ -147,8 +147,32 @@ const FunnySoundScreen: React.FC = () => {
         return;
       }
       
-      // Navigate to detail if no VIP required or user is VIP
-      navigation.navigate(SCREEN_NAMES.FUNNY_SOUND_DETAIL, { sound: item });
+      // Show interstitial ad before navigation (skip for VIP users)
+      if (!isVip) {
+        try {
+          console.log('🎯 Showing interstitial ad for Funny Sound item...');
+          await AdManager.showInterstitialAd(
+            ADS_UNIT.INTERSTITIAL_FUNNYSOUND,
+            () => {
+              // Navigate to detail after ad is closed
+              console.log('✅ Interstitial ad closed, navigating to Funny Sound detail');
+              navigation.navigate(SCREEN_NAMES.FUNNY_SOUND_DETAIL, { sound: item });
+            },
+            (error: any) => {
+              // Navigate anyway if ad fails
+              console.log('❌ Interstitial ad failed:', error);
+              navigation.navigate(SCREEN_NAMES.FUNNY_SOUND_DETAIL, { sound: item });
+            }
+          );
+        } catch (error) {
+          // Fallback navigation if ad system fails
+          console.error('❌ Error showing interstitial ad:', error);
+          navigation.navigate(SCREEN_NAMES.FUNNY_SOUND_DETAIL, { sound: item });
+        }
+      } else {
+        // VIP users skip ads and navigate directly
+        navigation.navigate(SCREEN_NAMES.FUNNY_SOUND_DETAIL, { sound: item });
+      }
     };
 
     return (

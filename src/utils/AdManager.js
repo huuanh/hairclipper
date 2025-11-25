@@ -36,7 +36,6 @@ export const ADS_UNIT_VALUES = {
     NATIVE_SETTINGS: TestIds.NATIVE,
 
     // Interstitial Ads
-    INTERSTITIAL_IAP: TestIds.INTERSTITIAL,
     INTERSTITIAL_HOME: TestIds.INTERSTITIAL,
     INTERSTITIAL_HAIRCLIPPER: TestIds.INTERSTITIAL,
     // INTERSTITIAL_HAIRCLIPPER_ITEM: TestIds.INTERSTITIAL,
@@ -68,7 +67,6 @@ export const ADS_UNIT_VALUES = {
     NATIVE_SETTINGS: 'ca-app-pub-7156273402668618/7137578392',
 
     // Interstitial Ads
-    INTERSTITIAL_IAP: 'ca-app-pub-7156273402668618/1802309474',
     INTERSTITIAL_HOME: 'ca-app-pub-7156273402668618/1802309474',
     INTERSTITIAL_HAIRCLIPPER: 'ca-app-pub-7156273402668618/4264821282',
     // INTERSTITIAL_HAIRCLIPPER_ITEM: 'ca-app-pub-7156273402668618/9489227804',
@@ -100,7 +98,7 @@ class AdManager {
         
         // Interstitial ads timing control
         this.lastInterstitialAdTime = 0; // Track last interstitial ad show time
-        this.INTERSTITIAL_AD_COOLDOWN = 60000; // Default 60 seconds, will be overridden by Remote Config
+        this.INTERSTITIAL_AD_COOLDOWN = 5; // Default 60 seconds, will be overridden by Remote Config
 
         // Preloaded ads cache
         this.preloadedAds = {
@@ -222,7 +220,11 @@ class AdManager {
         }
         
         console.log('🔄 Starting to preload all ads...');
-        this.preloadInterstitialAd();
+        this.preloadInterstitialAd(ADS_UNIT.INTERSTITIAL_HOME);
+        this.preloadInterstitialAd(ADS_UNIT.INTERSTITIAL_HAIRCLIPPER);
+        this.preloadInterstitialAd(ADS_UNIT.INTERSTITIAL_HAIRDRY);
+        this.preloadInterstitialAd(ADS_UNIT.INTERSTITIAL_FUNNYSOUND);
+        this.preloadInterstitialAd(ADS_UNIT.INTERSTITIAL_DIYMAKER);
         // this.preloadRewardedAd();
         this.preloadAppOpenAd();
 
@@ -231,7 +233,7 @@ class AdManager {
 
     
     // Preload interstitial ad
-    preloadInterstitialAd(adId = ADS_UNIT.INTERSTITIAL_IAP) {
+    preloadInterstitialAd(adId = ADS_UNIT.INTERSTITIAL_HOME) {
         // Don't preload ads for VIP users
         if (checkVipStatus()) {
             console.log('👑 VIP user - skipping interstitial ad preload');
@@ -265,7 +267,7 @@ class AdManager {
                 unsubscribeError();
                 
                 // Retry after 30 seconds
-                setTimeout(() => this.preloadInterstitialAd(), 30000);
+                setTimeout(() => this.preloadInterstitialAd(adId), 30000);
             });
 
             interstitial.load();
@@ -506,7 +508,7 @@ class AdManager {
         // Fallback to load and show if no preloaded ad available
         try {
             console.log('📺 Loading and showing interstitial ad (no preloaded available)');
-            const interstitial = this.InterstitialAd.createForAdRequest(this.getInterstitialAdUnitId());
+            const interstitial = this.InterstitialAd.createForAdRequest(adId);
 
             return new Promise((resolve, reject) => {
                 const unsubscribeLoaded = interstitial.addAdEventListener(this.AdEventType.LOADED, () => {

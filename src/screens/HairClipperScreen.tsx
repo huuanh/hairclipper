@@ -61,7 +61,7 @@ const HairClipperScreen: React.FC = () => {
     checkVipStatus();
   }, []);
 
-  const handleClipperPress = (clipper: typeof HAIR_CLIPPERS[0]) => {
+  const handleClipperPress = async (clipper: typeof HAIR_CLIPPERS[0]) => {
     // Check if item needs VIP and user is not VIP
     if (clipper.needVip && !isVip) {
       setSelectedItem(clipper);
@@ -69,8 +69,32 @@ const HairClipperScreen: React.FC = () => {
       return;
     }
     
-    // Navigate to detail if no VIP required or user is VIP
-    navigation.navigate(SCREEN_NAMES.HAIR_CLIPPER_DETAIL, { clipper });
+    // Show interstitial ad before navigation (skip for VIP users)
+    if (!isVip) {
+      try {
+        console.log('🎯 Showing interstitial ad for Hair Clipper item...');
+        await AdManager.showInterstitialAd(
+          ADS_UNIT.INTERSTITIAL_HAIRCLIPPER,
+          () => {
+            // Navigate to detail after ad is closed
+            console.log('✅ Interstitial ad closed, navigating to Hair Clipper detail');
+            navigation.navigate(SCREEN_NAMES.HAIR_CLIPPER_DETAIL, { clipper });
+          },
+          (error: any) => {
+            // Navigate anyway if ad fails
+            console.log('❌ Interstitial ad failed:', error);
+            navigation.navigate(SCREEN_NAMES.HAIR_CLIPPER_DETAIL, { clipper });
+          }
+        );
+      } catch (error) {
+        // Fallback navigation if ad system fails
+        console.error('❌ Error showing interstitial ad:', error);
+        navigation.navigate(SCREEN_NAMES.HAIR_CLIPPER_DETAIL, { clipper });
+      }
+    } else {
+      // VIP users skip ads and navigate directly
+      navigation.navigate(SCREEN_NAMES.HAIR_CLIPPER_DETAIL, { clipper });
+    }
   };
 
   const handleBackPress = () => {
