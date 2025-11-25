@@ -123,6 +123,10 @@ const HairClipperScreen: React.FC = () => {
     // VIP status will be updated automatically via callback
   };
 
+  const handleSettingsPress = () => {
+    navigation.navigate(SCREEN_NAMES.SETTINGS);
+  };
+
   const getClipperImage = (id: number) => {
     switch (id) {
       case 1: return require('../../assets/hairClipper/1.png');
@@ -180,7 +184,7 @@ const HairClipperScreen: React.FC = () => {
             <Image source={require('../../assets/icon/back.png')} style={styles.headerIcon} resizeMode="contain" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t('header.hair_clipper', 'Hair Clipper')}</Text>
-          <TouchableOpacity style={styles.headerButton} onPress={() => {}}>
+          <TouchableOpacity style={styles.headerButton} onPress={handleSettingsPress}>
             <Image source={require('../../assets/icon/setting.png')} style={styles.headerIcon} resizeMode="contain" />
           </TouchableOpacity>
         </View>

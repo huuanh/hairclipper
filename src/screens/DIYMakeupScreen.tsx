@@ -46,6 +46,10 @@ const DIYMakeupScreen: React.FC = () => {
     navigation.goBack();
   };
 
+  const handleSettingsPress = () => {
+    navigation.navigate(SCREEN_NAMES.SETTINGS as never);
+  };
+
   const requestCameraPermission = async () => {
     if (Platform.OS === 'android') {
       try {
@@ -162,7 +166,7 @@ const DIYMakeupScreen: React.FC = () => {
             />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t('header.diy_makeup')}</Text>
-          <TouchableOpacity style={styles.headerButton}>
+          <TouchableOpacity style={styles.headerButton} onPress={handleSettingsPress}>
             <Image
               source={require('../../assets/icon/setting.png')}
               style={styles.headerIcon}

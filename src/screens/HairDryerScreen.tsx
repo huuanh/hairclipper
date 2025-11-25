@@ -77,6 +77,10 @@ const HairDryerScreen: React.FC = () => {
     navigation.goBack();
   };
 
+  const handleSettingsPress = () => {
+    navigation.navigate(SCREEN_NAMES.SETTINGS);
+  };
+
   const handleWatchAds = async () => {
     // Show rewarded ad first
     try {
@@ -180,7 +184,7 @@ const HairDryerScreen: React.FC = () => {
             <Image source={require('../../assets/icon/back.png')} style={styles.headerIcon} resizeMode="contain" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t('header.hair_dryer', 'Hair Dryer')}</Text>
-          <TouchableOpacity style={styles.headerButton} onPress={() => {}}>
+          <TouchableOpacity style={styles.headerButton} onPress={handleSettingsPress}>
             <Image source={require('../../assets/icon/setting.png')} style={styles.headerIcon} resizeMode="contain" />
           </TouchableOpacity>
         </View>

@@ -82,6 +82,10 @@ const FunnySoundScreen: React.FC = () => {
     navigation.goBack();
   };
 
+  const handleSettingsPress = () => {
+    navigation.navigate(SCREEN_NAMES.SETTINGS as never);
+  };
+
   const handleWatchAds = async () => {
     // Show rewarded ad first
     try {
@@ -199,7 +203,7 @@ const FunnySoundScreen: React.FC = () => {
             />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t('header.funny_sounds', 'Funny Sound')}</Text>
-          <TouchableOpacity style={styles.headerButton}>
+          <TouchableOpacity style={styles.headerButton} onPress={handleSettingsPress}>
             <Image
               source={require('../../assets/icon/setting.png')}
               style={styles.headerIcon}
