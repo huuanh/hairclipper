@@ -20,6 +20,7 @@ import { Colors, GradientStyles } from '../constants/colors';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { IAPModal } from '../components';
 import VIPManager from '../utils/VIPManager';
+import { useTranslation } from '../hooks/useTranslation';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -33,6 +34,7 @@ interface SettingItem {
 const SettingsScreen: React.FC = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [showVoteModal, setShowVoteModal] = useState(false);
   const [selectedRating, setSelectedRating] = useState(5);
   const [showIAPModal, setShowIAPModal] = useState(false);
@@ -89,9 +91,9 @@ const SettingsScreen: React.FC = () => {
       
       // Show success message
       Alert.alert(
-        'Purchase Successful',
-        'Thank you for upgrading to premium! You now have access to all premium features.',
-        [{ text: 'OK' }]
+        t('settings.purchase_successful'),
+        t('settings.purchase_successful_desc'),
+        [{ text: t('settings.ok') }]
       );
       
       // Close modal
@@ -112,8 +114,8 @@ const SettingsScreen: React.FC = () => {
     console.log('Share pressed');
     try {
       const shareOptions = {
-        title: 'Share App',
-        message: 'Check out this amazing app! ' + 'https://play.google.com/store/apps/details?id=boom.bvr.recorder.pro',
+        title: t('settings.share_title'),
+        message: t('settings.share_message') + 'https://play.google.com/store/apps/details?id=boom.bvr.recorder.pro',
         url: 'https://play.google.com/store/apps/details?id=boom.hairclipper.funnyprank.haircut.sound'
       };
 
@@ -186,25 +188,25 @@ const SettingsScreen: React.FC = () => {
   const settingItems: SettingItem[] = [
     {
       id: 'language',
-      title: 'Language',
+      title: t('settings.language'),
       icon: require('../../assets/setting/language.png'),
       onPress: handleLanguage,
     },
     {
       id: 'share',
-      title: 'Share',
+      title: t('settings.share'),
       icon: require('../../assets/setting/share.png'),
       onPress: handleShare,
     },
     {
       id: 'vote',
-      title: 'Vote',
+      title: t('settings.vote'),
       icon: require('../../assets/setting/vote.png'),
       onPress: handleVote,
     },
     {
       id: 'policy',
-      title: 'Policy',
+      title: t('settings.policy'),
       icon: require('../../assets/setting/policy.png'),
       onPress: handlePolicy,
     },
@@ -245,7 +247,7 @@ const SettingsScreen: React.FC = () => {
               style={styles.headerIcon}
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>SETTING</Text>
+          <Text style={styles.headerTitle}>{t('settings.title')}</Text>
           <View style={styles.headerButton} />
         </View>
 
@@ -270,12 +272,12 @@ const SettingsScreen: React.FC = () => {
               <View style={styles.premiumContent}>
                 <View style={styles.premiumLeft}>
                   <Text style={styles.premiumTitle}>
-                    {isVip ? 'Premium\nActive' : 'Premium\nUpgrade'}
+                    {isVip ? t('settings.premium_active') : t('settings.premium_upgrade')}
                   </Text>
                   <Text style={styles.premiumSubtitle}>
                     {isVip 
-                      ? 'You have access to all\npremium features!' 
-                      : 'Enjoy Premium Package\nwith exclusive features.'
+                      ? t('settings.premium_active_desc') 
+                      : t('settings.premium_upgrade_desc')
                     }
                   </Text>
                 </View>
@@ -338,8 +340,8 @@ const SettingsScreen: React.FC = () => {
             />
 
             {/* Title */}
-            <Text style={styles.modalTitle}>Thank you for using the app</Text>
-            <Text style={styles.modalSubtitle}>We look forward to receiving your comments</Text>
+            <Text style={styles.modalTitle}>{t('settings.vote_modal_title')}</Text>
+            <Text style={styles.modalSubtitle}>{t('settings.vote_modal_subtitle')}</Text>
 
             {/* Rating Stars */}
             <View style={styles.starsContainer}>
@@ -366,7 +368,7 @@ const SettingsScreen: React.FC = () => {
               style={styles.voteButton}
               onPress={handleSubmitVote}
             >
-              <Text style={styles.voteButtonText}>VOTE</Text>
+              <Text style={styles.voteButtonText}>{t('settings.vote_button')}</Text>
             </TouchableOpacity>
           </View>
         </View>

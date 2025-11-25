@@ -13,12 +13,14 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import { CustomButton } from '../components';
 import { Colors, GradientStyles } from '../constants/colors';
+import { useTranslation } from '../hooks/useTranslation';
 import { SCREEN_NAMES } from '../constants';
 import { RootStackParamList } from '../navigation/RootNavigator';
 
 const DIYMakeupCameraScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -47,7 +49,7 @@ const DIYMakeupCameraScreen: React.FC = () => {
             size="small"
             style={styles.backButton}
           />
-          <Text style={styles.headerTitle}>Take Photo</Text>
+          <Text style={styles.headerTitle}>{t('diy.take_photo')}</Text>
           <View style={styles.headerSpace} />
         </View>
 

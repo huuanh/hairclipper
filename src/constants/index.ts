@@ -21,27 +21,6 @@ export const SCREEN_NAMES = {
   FUNNY_SOUND_DETAIL: 'FunnySoundDetail',
 } as const;
 
-export const ONBOARDING_DATA = [
-  {
-    id: 1,
-    title: 'DIY Makeup',
-    subtitle: 'Beard It, Wig It, Meme It!',
-    image: require('../../assets/onboard/1.png'),
-  },
-  {
-    id: 2,
-    title: 'Hair Clipper Prank',
-    subtitle: 'Buzz It Like a Pro',
-    image: require('../../assets/onboard/2.png'),
-  },
-  {
-    id: 3,
-    title: 'Funny Sounds Prank',
-    subtitle: 'Make Some Noise, Break the Silence!',
-    image: require('../../assets/onboard/3.png'),
-  },
-];
-
 export const ASYNC_STORAGE_KEYS = {
   ONBOARDING_COMPLETED: '@hair_clipper_onboarding_completed',
   SELECTED_LANGUAGE: '@hair_clipper_selected_language',

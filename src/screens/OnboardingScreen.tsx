@@ -14,16 +14,41 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import { CustomButton } from '../components';
 import { Colors, GradientStyles } from '../constants/colors';
-import { SCREEN_NAMES, ONBOARDING_DATA, ASYNC_STORAGE_KEYS } from '../constants';
+import { SCREEN_NAMES, ASYNC_STORAGE_KEYS } from '../constants';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { ADS_UNIT } from '../utils/AdManager';
+import { useTranslation } from '../hooks/useTranslation';
 
 const { width, height } = Dimensions.get('window');
 
 const OnboardingScreen: React.FC = () => {
     const navigation = useNavigation();
+    const { t } = useTranslation();
     const [currentPage, setCurrentPage] = useState(0);
     const pagerRef = useRef<PagerView>(null);
+
+    const getOnboardingData = () => [
+        {
+            id: 1,
+            title: t('onboarding.diy_makeup.title'),
+            subtitle: t('onboarding.diy_makeup.subtitle'),
+            image: require('../../assets/onboard/1.png'),
+        },
+        {
+            id: 2,
+            title: t('onboarding.hair_clipper.title'),
+            subtitle: t('onboarding.hair_clipper.subtitle'),
+            image: require('../../assets/onboard/2.png'),
+        },
+        {
+            id: 3,
+            title: t('onboarding.funny_sounds.title'),
+            subtitle: t('onboarding.funny_sounds.subtitle'),
+            image: require('../../assets/onboard/3.png'),
+        },
+    ];
+
+    const ONBOARDING_DATA = getOnboardingData();
 
     const handleNext = async () => {
         if (currentPage < ONBOARDING_DATA.length - 1) {
@@ -103,7 +128,7 @@ const OnboardingScreen: React.FC = () => {
             {currentPage === ONBOARDING_DATA.length - 1 && (
                 <View style={styles.footer}>
                     <CustomButton
-                        title={currentPage === ONBOARDING_DATA.length - 1 ? 'Get Started' : 'Next'}
+                        title={currentPage === ONBOARDING_DATA.length - 1 ? t('onboarding.get_started') : t('onboarding.next')}
                         onPress={handleNext}
                         size="large"
                         variant="outline"
@@ -118,7 +143,7 @@ const OnboardingScreen: React.FC = () => {
             {currentPage !== ONBOARDING_DATA.length - 1 && (
                 <View style={styles.footer}>
                     <CustomButton
-                        title={currentPage === ONBOARDING_DATA.length - 1 ? 'Get Started' : 'Next'}
+                        title={currentPage === ONBOARDING_DATA.length - 1 ? t('onboarding.get_started') : t('onboarding.next')}
                         onPress={handleNext}
                         size="large"
                         variant="outline"

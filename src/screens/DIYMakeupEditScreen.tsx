@@ -30,6 +30,7 @@ import Share from 'react-native-share';
 
 import { CustomButton } from '../components';
 import { Colors, GradientStyles } from '../constants/colors';
+import { useTranslation } from '../hooks/useTranslation';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 
@@ -127,17 +128,18 @@ const BALD_HEAD_ITEMS: MakeupItem[] = Array.from({ length: 6 }, (_, i) => ({
   category: 'baldHead',
 }));
 
-const TABS = [
-  { key: 'hair' as TabType, label: 'Hair', icon: require('../../assets/icon/hair.png') },
-  { key: 'beard' as TabType, label: 'Beard', icon: require('../../assets/icon/beard.png') },
-  { key: 'baldHead' as TabType, label: 'Bald Head', icon: require('../../assets/icon/bald.png') },
-];
-
 const DIYMakeupEditScreen: React.FC = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const route = useRoute<DIYMakeupEditRouteProp>();
   const { imageUri } = route.params;
+
+  const TABS = [
+    { key: 'hair' as TabType, label: t('diy.hair'), icon: require('../../assets/icon/hair.png') },
+    { key: 'beard' as TabType, label: t('diy.beard'), icon: require('../../assets/icon/beard.png') },
+    { key: 'baldHead' as TabType, label: t('diy.bald_head'), icon: require('../../assets/icon/bald.png') },
+  ];
 
   const viewShotRef = useRef<ViewShot>(null);
   const [activeTab, setActiveTab] = useState<TabType>('hair');
@@ -206,7 +208,7 @@ const DIYMakeupEditScreen: React.FC = () => {
     try {
       const hasPermission = await requestStoragePermission();
       if (!hasPermission) {
-        Alert.alert('Permission Required', 'Storage permission is required to save photos.');
+        Alert.alert(t('diy.permission_required'), t('diy.storage_permission_desc'));
         return;
       }
 
@@ -222,7 +224,7 @@ const DIYMakeupEditScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('Error saving photo:', error);
-      Alert.alert('Error', 'Failed to save photo. Please try again.');
+      Alert.alert(t('diy.error'), t('diy.save_error'));
     }
   };
 
@@ -244,16 +246,16 @@ const DIYMakeupEditScreen: React.FC = () => {
   const handleShare = async () => {
     try {
       if (!savedImageUri) {
-        Alert.alert('Error', 'No image to share');
+        Alert.alert(t('diy.error'), t('diy.no_image_share'));
         return;
       }
 
       const shareOptions = {
-        title: 'Hair Makeover',
-        message: 'Check out my awesome hair makeover created with Hair Clipper App! 💇‍♂️✨',
+        title: t('diy.hair_makeover_title'),
+        message: t('diy.share_message'),
         url: savedImageUri,
         type: 'image/jpeg',
-        subject: 'Hair Makeover from Hair Clipper App',
+        subject: t('diy.hair_makeover_title'),
         failOnCancel: false,
         showAppsToView: true,
       };
@@ -264,7 +266,7 @@ const DIYMakeupEditScreen: React.FC = () => {
       // Don't show error if user simply cancelled the share
       if (error?.message && !error.message.includes('User did not share') && !error.message.includes('cancelled')) {
         console.error('Error sharing:', error);
-        Alert.alert('Error', 'Failed to share image. Please try again.');
+        Alert.alert(t('diy.error'), t('diy.share_error'));
       }
     }
   };
@@ -495,7 +497,7 @@ const DIYMakeupEditScreen: React.FC = () => {
               style={styles.headerIcon}
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Edit Photo</Text>
+          <Text style={styles.headerTitle}>{t('diy.edit_photo')}</Text>
           <TouchableOpacity style={styles.headerButton} onPress={handleSavePress}>
             <Image
               source={require('../../assets/icon/download.png')}
@@ -699,7 +701,7 @@ const DIYMakeupEditScreen: React.FC = () => {
       >
         <View style={styles.popupOverlay}>
           <View style={styles.popupContainer}>
-            <Text style={styles.popupTitle}>Image saved successfully!!!</Text>
+            <Text style={styles.popupTitle}>{t('diy.save_success')}</Text>
 
             <View style={styles.popupTop}>
               {savedImageUri && (
@@ -715,14 +717,14 @@ const DIYMakeupEditScreen: React.FC = () => {
                   style={[styles.popupButton, styles.editMoreButton]}
                   onPress={handleEditMore}
                 >
-                  <Text style={styles.editMoreButtonText}>Edit more</Text>
+                  <Text style={styles.editMoreButtonText}>{t('diy.edit_more')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.popupButton, styles.continueButton]}
                   onPress={handleContinueEditing}
                 >
-                  <Text style={styles.continueButtonText}>Continue editing</Text>
+                  <Text style={styles.continueButtonText}>{t('diy.continue_editing')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -735,14 +737,14 @@ const DIYMakeupEditScreen: React.FC = () => {
               style={styles.shareButton}
               onPress={handleShare}
             >
-              <Text style={styles.shareButtonText}>Share</Text>
+              <Text style={styles.shareButtonText}>{t('diy.share')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.popupButton, styles.backToHomeButton]}
               onPress={handleBackToHome}
             >
-              <Text style={styles.backToHomeButtonText}>Back to home</Text>
+              <Text style={styles.backToHomeButtonText}>{t('diy.back_to_home')}</Text>
             </TouchableOpacity>
           </View>
         </View>

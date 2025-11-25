@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors } from '../constants/colors';
+import { useTranslation } from '../hooks/useTranslation';
 import IAPManager, { IAP_PRODUCTS } from '../utils/IAPManager';
 import type { Product, Purchase } from 'react-native-iap';
 
@@ -29,6 +30,7 @@ const IAPModal: React.FC<IAPModalProps> = ({
   onClose,
   onPurchase,
 }) => {
+  const { t } = useTranslation();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
@@ -99,7 +101,7 @@ const IAPModal: React.FC<IAPModalProps> = ({
           console.log('✅ Product found in subscriptions:', subProduct);
         } else {
           console.log('❌ Product not found anywhere');
-          setError('Product not available in your region');
+          setError(t('iap.product_not_available'));
         }
         
         // Log all available products for debugging
@@ -109,7 +111,7 @@ const IAPModal: React.FC<IAPModalProps> = ({
       }
     } catch (error) {
       console.error('❌ Error loading product data:', error);
-      setError('Failed to load product information');
+      setError(t('iap.failed_to_load'));
     } finally {
       setLoading(false);
     }
@@ -139,19 +141,19 @@ const IAPModal: React.FC<IAPModalProps> = ({
         console.error('❌ Purchase error:', error);
         setPurchasing(false);
         
-        let errorMessage = 'Purchase failed';
+        let errorMessage = t('iap.purchase_failed');
         if (error.code === 'USER_CANCELED' || error.responseCode === 1) {
-          errorMessage = 'Purchase was cancelled';
+          errorMessage = t('iap.purchase_cancelled');
         } else if (error.code === 'ITEM_ALREADY_OWNED' || error.responseCode === 7) {
-          errorMessage = 'You already own this item';
+          errorMessage = t('iap.item_already_owned');
         } else if (error.code === 'ITEM_UNAVAILABLE' || error.responseCode === 4) {
-          errorMessage = 'Item is not available for purchase';
+          errorMessage = t('iap.item_unavailable');
         }
         
         setError(errorMessage);
         
         // Show alert for user feedback
-        Alert.alert('Purchase Error', errorMessage);
+        Alert.alert(t('iap.purchase_error'), errorMessage);
         
         // Remove callback to prevent memory leaks
         iapManager.removePurchaseErrorCallback(onPurchaseError);
@@ -173,8 +175,8 @@ const IAPModal: React.FC<IAPModalProps> = ({
     } catch (error) {
       console.error('❌ Purchase request failed:', error);
       setPurchasing(false);
-      setError('Failed to initiate purchase');
-      Alert.alert('Error', 'Failed to start purchase process');
+      setError(t('iap.failed_to_start'));
+      Alert.alert(t('iap.error'), t('iap.failed_to_start'));
     }
   }, [product, purchasing, onPurchase, onClose]);
 
@@ -265,22 +267,22 @@ const IAPModal: React.FC<IAPModalProps> = ({
         <View style={styles.content}>
           {/* Title */}
           <View style={styles.titleContainer}>
-            <Text style={styles.premiumText}>HAIR CLIPPER PRANK</Text>
-            <Text style={styles.premiumSubText}>PREMIUM</Text>
+            <Text style={styles.premiumText}>{t('iap.title')}</Text>
+            <Text style={styles.premiumSubText}>{t('iap.premium')}</Text>
           </View>
           
           {/* Main title */}
-          <Text style={styles.mainTitle}>BUY ONCE USE FOREVER</Text>
+          <Text style={styles.mainTitle}>{t('iap.buy_once_use_forever')}</Text>
           
           {/* Features */}
           <View style={styles.featuresContainer}>
             <View style={styles.featureItem}>
               <Text style={styles.checkMark}>✓</Text>
-              <Text style={styles.featureText}>Unlock all sounds</Text>
+              <Text style={styles.featureText}>{t('iap.unlock_all_sounds')}</Text>
             </View>
             <View style={styles.featureItem}>
               <Text style={styles.checkMark}>✓</Text>
-              <Text style={styles.featureText}>Remove ads</Text>
+              <Text style={styles.featureText}>{t('iap.remove_ads')}</Text>
             </View>
           </View>
           
@@ -288,7 +290,7 @@ const IAPModal: React.FC<IAPModalProps> = ({
           {loading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator color={Colors.white} size="large" />
-              <Text style={styles.loadingText}>Loading product information...</Text>
+              <Text style={styles.loadingText}>{t('iap.loading_product')}</Text>
             </View>
           )}
           
@@ -300,7 +302,7 @@ const IAPModal: React.FC<IAPModalProps> = ({
                 style={styles.retryButton} 
                 onPress={loadProductData}
               >
-                <Text style={styles.retryButtonText}>Retry</Text>
+                <Text style={styles.retryButtonText}>{t('iap.retry')}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -309,7 +311,7 @@ const IAPModal: React.FC<IAPModalProps> = ({
           {!loading && !error && (
             <View style={styles.priceContainer}>
               <Text style={styles.priceText}>{getDisplayPrice()}</Text>
-              <Text style={styles.priceSubText}>One-time purchase</Text>
+              <Text style={styles.priceSubText}>{t('iap.one_time_purchase')}</Text>
             </View>
           )}
           
@@ -335,21 +337,19 @@ const IAPModal: React.FC<IAPModalProps> = ({
               {purchasing ? (
                 <View style={styles.purchasingContainer}>
                   <ActivityIndicator color={Colors.white} size="small" />
-                  <Text style={[styles.buyButtonText, { marginLeft: 10 }]}>PROCESSING...</Text>
+                  <Text style={[styles.buyButtonText, { marginLeft: 10 }]}>{t('iap.processing')}</Text>
                 </View>
               ) : (
-                <Text style={styles.buyButtonText}>BUY NOW</Text>
+                <Text style={styles.buyButtonText}>{t('iap.buy_now')}</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>
           
           {/* Disclaimer */}
           <Text style={styles.disclaimer}>
-            First My Private PRO allows you to use all the features in our application. Subscriptions will{'\n'}
-            be automatically renewed with the same price at your Google Play settings. You can cancel your{'\n'}
-            subscription at any time in your Google Play settings.{' '}
-            <Text style={styles.linkText}>Terms of use</Text> and{' '}
-            <Text style={styles.linkText}>Privacy Policy</Text>
+            {t('iap.disclaimer')}{' '}
+            <Text style={styles.linkText}>{t('iap.terms_of_use')}</Text> and{' '}
+            <Text style={styles.linkText}>{t('iap.privacy_policy')}</Text>
           </Text>
         </View>
       </View>

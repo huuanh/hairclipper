@@ -20,25 +20,27 @@ import { CustomButton, MenuCard } from '../components';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { Colors, GradientStyles } from '../constants/colors';
 import { SCREEN_NAMES } from '../constants';
-
-const DIY_MAKEUP_OPTIONS = [
-  {
-    id: 1,
-    title: 'Upload\nPhoto',
-    icon: require('../../assets/icon/gallery.png'),
-    action: 'gallery',
-  },
-  {
-    id: 2,
-    title: 'Capture from\nCamera',
-    icon: require('../../assets/icon/camera.png'),
-    action: 'camera',
-  },
-];
+import { useTranslation } from '../hooks/useTranslation';
 
 const DIYMakeupScreen: React.FC = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+
+  const DIY_MAKEUP_OPTIONS = [
+    {
+      id: 1,
+      title: t('diy.upload_photo'),
+      icon: require('../../assets/icon/gallery.png'),
+      action: 'gallery',
+    },
+    {
+      id: 2,
+      title: t('diy.capture_camera'),
+      icon: require('../../assets/icon/camera.png'),
+      action: 'camera',
+    },
+  ];
 
   const handleBackPress = () => {
     navigation.goBack();
@@ -159,7 +161,7 @@ const DIYMakeupScreen: React.FC = () => {
               style={styles.headerIcon}
             />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>DIY Maker</Text>
+          <Text style={styles.headerTitle}>{t('header.diy_makeup')}</Text>
           <TouchableOpacity style={styles.headerButton}>
             <Image
               source={require('../../assets/icon/setting.png')}

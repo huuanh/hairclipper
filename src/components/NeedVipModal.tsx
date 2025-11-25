@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors } from '../constants/colors';
+import { useTranslation } from '../hooks/useTranslation';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -28,6 +29,8 @@ const NeedVipModal: React.FC<NeedVipModalProps> = ({
   onGoPremium,
   itemType = 'Sound type',
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={visible}
@@ -57,11 +60,11 @@ const NeedVipModal: React.FC<NeedVipModalProps> = ({
           </View>
 
           {/* Title */}
-          <Text style={styles.title}>UNLOCK PREMIUM</Text>
+          <Text style={styles.title}>{t('needvip.unlock_premium')}</Text>
           
           {/* Subtitle */}
           <Text style={styles.subtitle}>
-            Watch a short video add to unlock {itemType}
+            {t('needvip.watch_video_to_unlock') + { itemType }}
           </Text>
 
           {/* Watch Ads Button */}
@@ -76,14 +79,14 @@ const NeedVipModal: React.FC<NeedVipModalProps> = ({
                 style={styles.videoIcon}
                 resizeMode="contain"
               />
-              <Text style={styles.watchAdsText}>WATCH ADS</Text>
+              <Text style={styles.watchAdsText}>{t('needvip.watch_ads')}</Text>
             </View>
           </TouchableOpacity>
 
           {/* Divider */}
           <View style={styles.dividerContainer}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>Or</Text>
+            <Text style={styles.dividerText}>{t('needvip.or')}</Text>
             <View style={styles.dividerLine} />
           </View>
 
@@ -104,13 +107,13 @@ const NeedVipModal: React.FC<NeedVipModalProps> = ({
                 style={styles.premiumIcon}
                 resizeMode="contain"
               />
-              <Text style={styles.goPremiumText}>GO PREMIUM</Text>
+              <Text style={styles.goPremiumText}>{t('needvip.go_premium')}</Text>
             </LinearGradient>
           </TouchableOpacity>
 
           {/* Description */}
           <Text style={styles.description}>
-            Get unlimited access to all premium{'\n'}features - forever
+            {t('needvip.unlimited_access_description')}
           </Text>
         </View>
       </View>

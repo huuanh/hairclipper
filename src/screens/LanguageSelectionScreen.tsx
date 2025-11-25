@@ -18,6 +18,7 @@ import { SCREEN_NAMES } from '../constants';
 import { NativeAdComponent } from '../utils/NativeAdComponent';
 import { ADS_UNIT } from '../utils/AdManager';
 import LanguageManager, { SUPPORTED_LANGUAGES } from '../utils/LanguageManager';
+import { useTranslation } from '../hooks/useTranslation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ type LanguageSelectionRouteProp = RouteProp<
 const LanguageSelectionScreen: React.FC = () => {
     const navigation = useNavigation();
     const route = useRoute<LanguageSelectionRouteProp>();
+    const { t } = useTranslation();
     const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
     const [languageManager] = useState(() => LanguageManager.getInstance());
     const [supportedLanguages, setSupportedLanguages] = useState<any[]>([]);
@@ -153,7 +155,7 @@ const LanguageSelectionScreen: React.FC = () => {
             <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
 
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>LANGUAGE</Text>
+                <Text style={styles.headerTitle}>{t('settings.language')}</Text>
 
                 <TouchableOpacity
                     style={[styles.nextButton, isLoading && styles.nextButtonDisabled]}
