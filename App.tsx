@@ -6,7 +6,7 @@
 
 import React, { useEffect } from 'react';
 import { StatusBar } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import 'react-native-gesture-handler';
 import firebase from '@react-native-firebase/app';
 
@@ -45,17 +45,19 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="light-content" backgroundColor="#2A2128" />
-      
-      {/* Main App Content - only render when connected */}
-      {isConnected && <RootNavigator />}
-      
-      {/* Network Loading Modal - show when disconnected */}
-      <NetworkLoadingModal
-        visible={!isConnected}
-        isRetrying={isRetrying}
-        onRetry={retryConnection}
-      />
+      {/* <SafeAreaView style={{ flex: 1 }}> */}
+        <StatusBar barStyle="dark-content" backgroundColor="#2A2128" />
+        
+        {/* Main App Content - only render when connected */}
+        {isConnected && <RootNavigator />}
+        
+        {/* Network Loading Modal - show when disconnected */}
+        <NetworkLoadingModal
+          visible={!isConnected}
+          isRetrying={isRetrying}
+          onRetry={retryConnection}
+        />
+      {/* </SafeAreaView> */}
     </SafeAreaProvider>
   );
 }

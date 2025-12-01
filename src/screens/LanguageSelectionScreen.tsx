@@ -9,8 +9,10 @@ import {
     StatusBar,
     Dimensions,
     Alert,
+    BackHandler,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 
 import { Colors, GradientStyles } from '../constants/colors';
@@ -26,11 +28,11 @@ type LanguageSelectionRouteProp = RouteProp<
     { LanguageSelection: { fromSettings?: boolean } },
     'LanguageSelection'
 >;
-
 const LanguageSelectionScreen: React.FC = () => {
     const navigation = useNavigation();
     const route = useRoute<LanguageSelectionRouteProp>();
     const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
     const [languageManager] = useState(() => LanguageManager.getInstance());
     const [supportedLanguages, setSupportedLanguages] = useState<any[]>([]);
@@ -53,6 +55,26 @@ const LanguageSelectionScreen: React.FC = () => {
 
         initializeLanguages();
     }, [languageManager]);
+
+    useEffect(() => {
+        // Reset navigation stack to prevent going back
+        // navigation.reset({
+        //     index: 0,
+        //     routes: [{ name: SCREEN_NAMES.ONBOARDING as never }],
+        // });
+    
+        // Handle hardware back button on Android
+        const backHandler = BackHandler.addEventListener(
+          'hardwareBackPress',
+          () => {
+            // Prevent going back from onboarding
+            return true; // Return true to prevent default back behavior
+          }
+        );
+    
+        return () => backHandler.remove();
+      }, []);
+    
 
     const handleLanguageSelect = (languageCode: string) => {
         setSelectedLanguage(languageCode);
@@ -154,7 +176,7 @@ const LanguageSelectionScreen: React.FC = () => {
         >
             <StatusBar barStyle="light-content" backgroundColor={Colors.background} />
 
-            <View style={styles.header}>
+            <View style={[styles.header, { paddingTop: insets.top }]}>
                 <Text style={styles.headerTitle}>{t('settings.language')}</Text>
 
                 <TouchableOpacity
